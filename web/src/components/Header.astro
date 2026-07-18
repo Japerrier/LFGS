@@ -1,0 +1,49 @@
+---
+import { externalLinks } from '../data/site';
+
+interface Props {
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+
+const navItems = [
+  { label: 'Home', href: '/', match: (p: string) => p === '/' },
+  { label: 'Tournament', href: '/tournament/schedule', match: (p: string) => p.startsWith('/tournament') || p.startsWith('/teams') },
+  { label: 'Hall of Fame', href: '/hall-of-fame', match: (p: string) => p.startsWith('/hall-of-fame') },
+  { label: 'About', href: '/about', match: (p: string) => p.startsWith('/about') },
+];
+---
+
+<header class="fixed inset-x-0 top-0 z-100 flex h-[72px] items-center justify-between border-b border-gold/18 bg-bg/88 px-8 backdrop-blur-md">
+  <a href="/" class="flex items-center gap-3">
+    <img src="/images/logo.png" alt="LFGS logo" class="h-10 w-10 object-contain" />
+    <span class="font-display text-[22px] font-bold leading-none tracking-wide text-ink">LFGS</span>
+  </a>
+
+  <nav class="flex items-center gap-1">
+    {navItems.map((item) => {
+      const active = item.match(currentPath);
+      return (
+        <a
+          href={item.href}
+          class:list={[
+            'rounded-md px-[18px] py-2.5 font-display text-[15.5px] font-semibold',
+            active ? 'bg-gold/10 text-gold' : 'text-muted-softer hover:text-ink',
+          ]}
+        >
+          {item.label}
+        </a>
+      );
+    })}
+  </nav>
+
+  <a
+    href={externalLinks.discord}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="flex items-center gap-2 rounded-md bg-linear-to-br from-gold-grad-from to-gold-grad-to px-5 py-2.5 font-display text-[15px] font-bold tracking-wide text-gold-ink shadow-[0_4px_16px_rgba(240,180,41,0.25)]"
+  >
+    Join Discord
+  </a>
+</header>

@@ -1,0 +1,35 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'LFGS — Looking For Gold Scrims, a fan-run Overwatch community tournament.' } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="/images/logo.png" />
+    <title>{title} · LFGS</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={`${title} · LFGS`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/images/hero-characters.png" />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <Header currentPath={currentPath} />
+    <main class="pt-[72px]">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

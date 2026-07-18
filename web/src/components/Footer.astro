@@ -1,0 +1,16 @@
+---
+import { externalLinks } from '../data/site';
+---
+
+<footer class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 border-t border-gold/15 px-8 py-10">
+  <div class="flex items-center gap-2.5">
+    <img src="/images/logo.png" alt="LFGS" class="h-7 w-7 object-contain" />
+    <span class="font-display text-base font-bold text-ink">Looking For Gold Scrims</span>
+  </div>
+  <div class="flex flex-wrap gap-5 text-[13.5px] text-muted">
+    <a href={externalLinks.discord} target="_blank" rel="noopener noreferrer">Discord</a>
+    <a href={externalLinks.twitch} target="_blank" rel="noopener noreferrer">Twitch</a>
+    <a href={externalLinks.youtube} target="_blank" rel="noopener noreferrer">YouTube</a>
+  </div>
+  <div class="text-[12.5px] text-faint">© Season 8 · LFGS — fan-run community tournament</div>
+</footer>
