@@ -1,0 +1,26 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import TournamentNav from '../../../components/TournamentNav.astro';
+import { BRACKETS, bracketFromSlug, bracketToSlug } from '../../../lib/brackets';
+
+export function getStaticPaths() {
+  return BRACKETS.map((b) => ({ params: { bracket: bracketToSlug(b) } }));
+}
+
+const { bracket: bracketSlug } = Astro.params;
+const bracket = bracketFromSlug(bracketSlug!);
+---
+
+<Layout title={`${bracket} Matchups`}>
+  <div class="mx-auto max-w-6xl px-8 pb-20 pt-10">
+    <TournamentNav activeTab="matchups" bracket={bracket} />
+
+    <div class="rounded-xl border border-gold/12 bg-bg-raised p-8 text-center">
+      <div class="mb-2 font-display text-lg font-bold text-ink">Matchups TBD</div>
+      <div class="text-sm text-muted">
+        Week 1 pairings are randomized per the rulebook once registration closes; later weeks pair teams by Swiss
+        standings. Check back once the {bracket} regular season is underway.
+      </div>
+    </div>
+  </div>
+</Layout>

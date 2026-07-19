@@ -4,6 +4,9 @@ export const externalLinks = {
   discord: 'https://discord.gg/lfgs',
   twitch: 'https://www.twitch.tv/lookingforgoldscrims',
   youtube: 'https://www.youtube.com/@lfgs7475',
+  // Live doc, actively maintained by staff — linked directly rather than a point-in-time PDF export.
+  rulebookDoc: 'https://docs.google.com/document/d/1Hk7Z-Rxsv9S4tcoUfVrQ5aLEu7i39_94VyBU54FtJL8/edit?usp=sharing',
+  registrationForm: 'https://docs.google.com/forms/d/e/1FAIpQLScAPfNzgUQ0QMBST8urLgMzuBUj6eFAjFXlYRg0_9FrShSGMA/viewform',
 };
 
 export const keyDates: KeyDate[] = [
@@ -54,7 +57,13 @@ export const rulebookHighlights: string[] = [
   'Match results posted in #S8-results; disputes go to LFGS staff',
 ];
 
-export const prizePool = [
+interface PrizePoolEntry {
+  place: string;
+  amount: string;
+  note?: string;
+}
+
+export const prizePool: PrizePoolEntry[] = [
   { place: '1st Place', amount: '6,000 OW Coins', note: '+ 1,000 to head coach' },
   { place: '2nd Place', amount: '4,000 OW Coins' },
   { place: '3rd Place', amount: '2,000 OW Coins' },
@@ -77,3 +86,7 @@ export const hofSeasons: HOFSeason[] = [8, 7, 6, 5, 4, 3].map((season) => ({
         ]
       : [],
 }));
+
+export function getHofSeason(season: number): HOFSeason | undefined {
+  return hofSeasons.find((s) => s.season === season);
+}

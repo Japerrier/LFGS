@@ -1,0 +1,36 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TournamentNav from '../../components/TournamentNav.astro';
+import { keyDates } from '../../data/site';
+
+const statusStyles: Record<string, string> = {
+  Open: 'bg-gold text-bg',
+  Deadline: 'bg-white/6 text-muted',
+  Upcoming: 'bg-white/6 text-muted',
+  TBD: 'bg-white/6 text-muted',
+};
+---
+
+<Layout title="Schedule">
+  <div class="mx-auto max-w-6xl px-8 pb-20 pt-10">
+    <TournamentNav activeTab="schedule" />
+
+    <div class="mb-5 flex flex-col gap-2.5">
+      {keyDates.map((d) => (
+        <div class="flex flex-wrap items-center gap-5 rounded-[10px] border border-gold/12 bg-bg-raised px-[22px] py-4">
+          <div class="min-w-[190px] font-display text-[17px] font-bold text-gold">{d.label}</div>
+          <div class="min-w-[190px] text-sm text-muted-soft">{d.date}</div>
+          <div class="min-w-[180px] flex-1 text-sm text-muted-softer">{d.desc}</div>
+          <div class:list={['rounded-full px-3.5 py-1.5 font-display text-xs font-bold', statusStyles[d.status]]}>
+            {d.status}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="rounded-lg border border-gold/20 bg-gold/8 px-4 py-3 text-[13.5px] leading-relaxed text-muted">
+      Regular season is Swiss-format: each team plays 1 official Bo3 match per week, default Sunday 8:00 PM EST.
+      Pairings after Week 1 are based on standings.
+    </div>
+  </div>
+</Layout>

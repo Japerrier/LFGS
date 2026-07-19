@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
 
 @theme {
   --font-display: 'Rajdhani', sans-serif;
@@ -31,7 +31,12 @@
 }
 
 @layer base {
+  html {
+    background: var(--color-bg);
+  }
+
   body {
+    min-height: 100vh;
     background: var(--color-bg);
     color: var(--color-ink);
     font-family: var(--font-body);

@@ -1,0 +1,76 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { hofSeasons, getHofSeason } from '../../data/site';
+
+export function getStaticPaths() {
+  return hofSeasons.map((s) => ({ params: { season: String(s.season) } }));
+}
+
+const { season: seasonParam } = Astro.params;
+const season = Number(seasonParam);
+const active = getHofSeason(season)!;
+
+const badgeStyles: Record<string, string> = {
+  '1st': 'bg-linear-to-br from-[#f7d774] to-[#c9962c]',
+  '2nd': 'bg-linear-to-br from-[#d9d9df] to-[#8a8a95]',
+  '3rd': 'bg-linear-to-br from-[#d99a5c] to-[#8a5a2c]',
+};
+---
+
+<Layout title={`Hall of Fame — Season ${season}`}>
+  <div class="mx-auto max-w-5xl px-8 pb-20 pt-10">
+    <div class="mb-7">
+      <div class="font-display text-sm font-semibold uppercase tracking-[3px] text-gold">LFGS History</div>
+      <h1 class="font-display text-[38px] font-bold text-ink">Hall of Fame</h1>
+    </div>
+
+    <div class="mb-8 flex flex-wrap gap-1.5 border-b border-gold/15">
+      {hofSeasons.map((s) => (
+        <a
+          href={`/hall-of-fame/${s.season}`}
+          class:list={[
+            '-mb-px px-[18px] py-3 font-display text-[15px] font-semibold',
+            s.season === season ? 'border-b-2 border-gold text-ink' : 'border-b-2 border-transparent text-muted',
+          ]}
+        >
+          Season {s.season}
+        </a>
+      ))}
+    </div>
+
+    {active.allStars.length > 0 && (
+      <>
+        <h2 class="mb-4 font-display text-xl font-bold text-ink">All-Stars</h2>
+        <div class="mb-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {active.allStars.map((as) => (
+            <div class="flex flex-col items-center gap-2.5 rounded-xl border border-gold/14 bg-bg-raised p-5 text-center">
+              <div class="flex h-14 w-14 items-center justify-center rounded-full bg-[repeating-linear-gradient(45deg,#1c1b20,#1c1b20_8px,#201f24_8px,#201f24_16px)] font-mono text-[9px] text-faint">
+                photo
+              </div>
+              <div class="font-display text-base font-bold text-ink">{as.name}</div>
+              <div class="text-[11px] font-semibold uppercase tracking-wide text-gold">{as.category} All-Star</div>
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+
+    <h2 class="mb-4 font-display text-xl font-bold text-ink">Podium</h2>
+    <div class="flex flex-col gap-3">
+      {active.podium.map((p) => (
+        <div class="flex items-center gap-5 rounded-[10px] border border-gold/12 bg-bg-raised px-6 py-[18px]">
+          <div
+            class:list={[
+              'flex h-13 w-13 shrink-0 items-center justify-center rounded-lg font-display text-[15px] font-bold text-gold-ink',
+              badgeStyles[p.place],
+            ]}
+          >
+            {p.place}
+          </div>
+          <div class="flex-1 font-display text-[19px] font-bold text-ink">{p.team}</div>
+          <div class="text-[13px] text-muted">{p.bracket}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</Layout>

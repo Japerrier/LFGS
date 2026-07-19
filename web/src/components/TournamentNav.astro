@@ -1,0 +1,83 @@
+---
+import type { Bracket } from '../data/types';
+import { getTeamsByBracket } from '../data/teams';
+import { BRACKETS, bracketToSlug } from '../lib/brackets';
+
+interface Props {
+  activeTab: 'schedule' | 'teams' | 'matchups' | 'bracket' | 'rulebook';
+  /** Only meaningful (and only rendered) for bracket-scoped tabs. */
+  bracket?: Bracket;
+}
+
+const { activeTab, bracket } = Astro.props;
+const isBracketScoped = activeTab === 'teams' || activeTab === 'matchups' || activeTab === 'bracket';
+const activeBracketSlug = bracket ? bracketToSlug(bracket) : bracketToSlug('Diamond');
+
+function tabHref(tab: 'schedule' | 'teams' | 'matchups' | 'bracket' | 'rulebook') {
+  switch (tab) {
+    case 'schedule':
+      return '/tournament/schedule';
+    case 'teams':
+      return `/tournament/teams/${activeBracketSlug}`;
+    case 'matchups':
+      return `/tournament/matchups/${activeBracketSlug}`;
+    case 'bracket':
+      return `/tournament/bracket/${activeBracketSlug}`;
+    case 'rulebook':
+      return '/tournament/rulebook';
+  }
+}
+
+const tabs: { key: typeof activeTab; label: string }[] = [
+  { key: 'schedule', label: 'Schedule' },
+  { key: 'teams', label: 'Teams' },
+  { key: 'matchups', label: 'Matchups' },
+  { key: 'bracket', label: 'Playoffs' },
+  { key: 'rulebook', label: 'Rulebook' },
+];
+---
+
+<div class="mb-7 flex flex-wrap items-baseline justify-between gap-4">
+  <div>
+    <div class="font-display text-sm font-semibold uppercase tracking-[3px] text-gold">Season 8</div>
+    <h1 class="font-display text-[38px] font-bold text-ink">Tournament Hub</h1>
+  </div>
+
+  {isBracketScoped && (
+    <div class="flex gap-2 rounded-[10px] border border-gold/15 bg-bg-raised p-[5px]">
+      {BRACKETS.map((b) => {
+        const active = b === bracket;
+        const count = getTeamsByBracket(b).length;
+        return (
+          <a
+            href={`/tournament/${activeTab}/${bracketToSlug(b)}`}
+            class:list={[
+              'flex items-center gap-1.5 whitespace-nowrap rounded-[7px] px-4 py-2 font-display text-sm font-bold',
+              active ? 'bg-gold text-bg' : 'text-muted-softer hover:text-ink',
+            ]}
+          >
+            <span>{b}</span>
+            <span class="opacity-60">({count})</span>
+          </a>
+        );
+      })}
+    </div>
+  )}
+</div>
+
+<div class="mb-8 flex flex-wrap gap-1.5 border-b border-gold/15">
+  {tabs.map((tab) => {
+    const active = tab.key === activeTab;
+    return (
+      <a
+        href={tabHref(tab.key)}
+        class:list={[
+          '-mb-px px-[18px] py-3 font-display text-[15px] font-semibold',
+          active ? 'border-b-2 border-gold text-ink' : 'border-b-2 border-transparent text-muted',
+        ]}
+      >
+        {tab.label}
+      </a>
+    );
+  })}
+</div>

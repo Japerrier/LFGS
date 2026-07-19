@@ -58,9 +58,3 @@ export interface HOFSeason {
   podium: HOFPodiumEntry[];
   allStars: HOFAllStar[];
 }
-
-export interface Matchup {
-  teamASlug: string;
-  teamBSlug: string;
-  schedule: string;
-}

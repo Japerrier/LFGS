@@ -8,6 +8,14 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   integrations: [react()],
 
+  redirects: {
+    '/tournament': '/tournament/schedule',
+    '/tournament/teams': '/tournament/teams/diamond',
+    '/tournament/matchups': '/tournament/matchups/diamond',
+    '/tournament/bracket': '/tournament/bracket/diamond',
+    '/hall-of-fame': '/hall-of-fame/8',
+  },
+
   vite: {
     plugins: [tailwindcss()]
   }
