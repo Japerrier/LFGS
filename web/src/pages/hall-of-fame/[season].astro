@@ -9,6 +9,7 @@ export function getStaticPaths() {
 const { season: seasonParam } = Astro.params;
 const season = Number(seasonParam);
 const active = getHofSeason(season)!;
+const hasMultipleBrackets = new Set(active.podium.map((p) => p.bracket)).size > 1;
 
 const badgeStyles: Record<string, string> = {
   '1st': 'bg-linear-to-br from-[#f7d774] to-[#c9962c]',
@@ -56,21 +57,52 @@ const badgeStyles: Record<string, string> = {
     )}
 
     <h2 class="mb-4 font-display text-xl font-bold text-ink">Podium</h2>
-    <div class="flex flex-col gap-3">
-      {active.podium.map((p) => (
-        <div class="flex items-center gap-5 rounded-[10px] border border-gold/12 bg-bg-raised px-6 py-[18px]">
-          <div
-            class:list={[
-              'flex h-13 w-13 shrink-0 items-center justify-center rounded-lg font-display text-[15px] font-bold text-gold-ink',
-              badgeStyles[p.place],
-            ]}
-          >
-            {p.place}
+    {hasMultipleBrackets ? (
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {(['Platinum', 'Diamond'] as const).map((bracket) => {
+          const entries = active.podium.filter((p) => p.bracket === bracket);
+          if (entries.length === 0) return null;
+          return (
+            <div>
+              <div class="mb-3 flex items-center gap-2.5">
+                <img src={`/images/${bracket}.PNG`} alt={`${bracket} bracket`} class="h-6 w-6 object-contain" />
+                <div class="font-display text-sm font-bold uppercase tracking-[2px] text-ink">{bracket}</div>
+              </div>
+              <div class="flex flex-col gap-3">
+                {entries.map((p) => (
+                  <div class="flex items-center gap-5 rounded-[10px] border border-gold/12 bg-bg-raised px-6 py-[18px]">
+                    <div
+                      class:list={[
+                        'flex h-13 w-13 shrink-0 items-center justify-center rounded-lg font-display text-[15px] font-bold text-gold-ink',
+                        badgeStyles[p.place],
+                      ]}
+                    >
+                      {p.place}
+                    </div>
+                    <div class="flex-1 font-display text-[19px] font-bold text-ink">{p.team}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    ) : (
+      <div class="flex flex-col gap-3">
+        {active.podium.map((p) => (
+          <div class="flex items-center gap-5 rounded-[10px] border border-gold/12 bg-bg-raised px-6 py-[18px]">
+            <div
+              class:list={[
+                'flex h-13 w-13 shrink-0 items-center justify-center rounded-lg font-display text-[15px] font-bold text-gold-ink',
+                badgeStyles[p.place],
+              ]}
+            >
+              {p.place}
+            </div>
+            <div class="flex-1 font-display text-[19px] font-bold text-ink">{p.team}</div>
           </div>
-          <div class="flex-1 font-display text-[19px] font-bold text-ink">{p.team}</div>
-          <div class="text-[13px] text-muted">{p.bracket}</div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    )}
   </div>
 </Layout>

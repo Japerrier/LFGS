@@ -34,7 +34,6 @@ const { team } = Astro.props;
           <div class="rounded-md bg-gold/12 px-2.5 py-[3px] font-display text-xs font-semibold uppercase tracking-wide text-gold">
             {team.bracket}
           </div>
-          <div class="text-[12.5px] text-muted">Seed #{team.seed}</div>
         </div>
         <div class="font-display text-[34px] font-bold text-ink">{team.name}</div>
       </div>
@@ -98,10 +97,6 @@ const { team } = Astro.props;
           <div class="mb-2 flex justify-between text-[13.5px] text-muted-softer">
             <span>Bracket</span>
             <span class="font-semibold text-ink">{team.bracket}</span>
-          </div>
-          <div class="mb-2 flex justify-between text-[13.5px] text-muted-softer">
-            <span>Seed</span>
-            <span class="font-semibold text-ink">#{team.seed}</span>
           </div>
           <div class="flex justify-between text-[13.5px] text-muted-softer">
             <span>Record</span>

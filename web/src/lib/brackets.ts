@@ -1,6 +1,6 @@
 import type { Bracket } from '../data/types';
 
-export const BRACKETS: Bracket[] = ['Diamond', 'Platinum'];
+export const BRACKETS: Bracket[] = ['Platinum', 'Diamond'];
 
 export function bracketToSlug(bracket: Bracket): string {
   return bracket.toLowerCase();

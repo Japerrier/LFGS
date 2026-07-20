@@ -69,8 +69,6 @@
 }
 
 .animate-marquee {
-  animation: lfgs-marquee 40s linear infinite;
-}
-.animate-marquee-slow {
-  animation: lfgs-marquee 34s linear infinite;
+  animation: lfgs-marquee 50s linear infinite;
+  will-change: transform;
 }

@@ -34,12 +34,13 @@ export interface KeyDate {
   label: string;
   date: string;
   desc: string;
-  status: 'Open' | 'Deadline' | 'Upcoming' | 'TBD';
+  status: 'Open' | 'Closed' | 'Upcoming' | 'TBD';
 }
 
 export interface LeadershipMember {
   name: string;
   role: string;
+  photo: string;
 }
 
 export interface HOFAllStar {

@@ -1,4 +1,4 @@
-import type { HOFSeason, KeyDate, LeadershipMember } from './types';
+import type { HOFAllStar, HOFPodiumEntry, HOFSeason, KeyDate, LeadershipMember } from './types';
 
 export const externalLinks = {
   discord: 'https://discord.gg/lfgs',
@@ -20,7 +20,7 @@ export const keyDates: KeyDate[] = [
     label: 'Registration Closes',
     date: 'Sun, Aug 9, 2026 · 11:59 PM EST',
     desc: 'Last chance to lock in a roster',
-    status: 'Deadline',
+    status: 'Closed',
   },
   {
     label: 'Regular Season Begins',
@@ -31,20 +31,22 @@ export const keyDates: KeyDate[] = [
   {
     label: 'Playoffs',
     date: 'TBD by team count',
-    desc: 'Double-elimination semifinals & grand final',
+    desc: 'Single-elimination Final 8, quarterfinals through grand final',
     status: 'TBD',
   },
 ];
 
 export const leadership: LeadershipMember[] = [
-  { name: 'Owner Name', role: 'Owner' },
-  { name: 'Co-Owner Name', role: 'Co-Owner' },
-  { name: 'Mod Name 1', role: 'Moderator' },
-  { name: 'Mod Name 2', role: 'Moderator' },
-  { name: 'Mod Name 3', role: 'Moderator' },
-  { name: 'Staff Name 1', role: 'Staff' },
-  { name: 'Staff Name 2', role: 'Staff' },
-  { name: 'Staff Name 3', role: 'Staff' },
+  { name: 'Archer Centauri', role: 'Owner', photo: '/images/lfgs-leadership/archer-centauri.png' },
+  { name: 'MightyOwl', role: 'Co-Owner', photo: '/images/lfgs-leadership/mightyowl.png' },
+  { name: 'CajunWiseguy', role: 'Moderator', photo: '/images/lfgs-leadership/cajunwiseguy.png' },
+  { name: 'Critic', role: 'Moderator', photo: '/images/lfgs-leadership/critic.png' },
+  { name: 'PSI', role: 'Staff', photo: '/images/lfgs-leadership/psi.png' },
+  { name: 'Keegsmonswag', role: 'Staff', photo: '/images/lfgs-leadership/keegsmonswag.png' },
+  { name: 'LadyQc', role: 'Staff', photo: '/images/lfgs-leadership/ladyqc.png' },
+  { name: 'Xelemental', role: 'Staff', photo: '/images/lfgs-leadership/xelemental.png' },
+  { name: 'Matt King 1993', role: 'Staff', photo: '/images/lfgs-leadership/matt-king-1993.png' },
+  { name: 'Vosik', role: 'Staff', photo: '/images/lfgs-leadership/vosik.png' },
 ];
 
 export const rulebookHighlights: string[] = [
@@ -52,7 +54,7 @@ export const rulebookHighlights: string[] = [
   "Teams capped at 8 players; coaches & managers don't count toward the cap",
   'Team skill-tier average capped at Diamond 3 (Diamond bracket) / Platinum 3 (Platinum bracket)',
   '2 hero bans per map, sequential by role; picks/bans/roster lock each have a 90-second clock',
-  'Playoffs are double-elimination: semifinals into a grand final',
+  'Playoffs are single-elimination: 8-team quarterfinals through a grand final',
   '5 pauses per match, 3 minutes each; one 5-minute bio break after map 2',
   'Match results posted in #S8-results; disputes go to LFGS staff',
 ];
@@ -69,22 +71,68 @@ export const prizePool: PrizePoolEntry[] = [
   { place: '3rd Place', amount: '2,000 OW Coins' },
 ];
 
+function bracketPodium(season: number, bracket: 'Diamond' | 'Platinum'): HOFPodiumEntry[] {
+  // Season 8 is the first to run both brackets, so its placeholders name the bracket to
+  // tell the two podiums apart; earlier seasons only ever had one bracket, so it's omitted.
+  const label = season === 8 ? `${bracket} ` : '';
+  return [
+    { place: '1st', team: `TBD ${label}Champion S${season}`, bracket },
+    { place: '2nd', team: `TBD ${label}Runner-up S${season}`, bracket },
+    { place: '3rd', team: `TBD ${label}3rd Place S${season}`, bracket },
+  ];
+}
+
+// Recorded results for past seasons. Season 3's record only survived for the 1st place
+// finisher — 2nd/3rd weren't tracked. Seasons without an entry here (i.e. Season 8, not yet
+// played) fall back to TBD placeholders.
+const historicalPodiums: Record<number, HOFPodiumEntry[]> = {
+  7: [
+    { place: '1st', team: 'DAWGS', bracket: 'Diamond' },
+    { place: '2nd', team: 'Prune Juice Predators', bracket: 'Diamond' },
+    { place: '3rd', team: 'Imperium', bracket: 'Diamond' },
+  ],
+  6: [
+    { place: '1st', team: 'Fireside Fireflies', bracket: 'Diamond' },
+    { place: '2nd', team: 'Last Disaster Final Stand', bracket: 'Diamond' },
+    { place: '3rd', team: 'Rebranded', bracket: 'Diamond' },
+  ],
+  5: [
+    { place: '1st', team: 'Fusion Academy', bracket: 'Diamond' },
+    { place: '2nd', team: 'OMG eSports: Americano', bracket: 'Diamond' },
+    { place: '3rd', team: 'Hello Kitties', bracket: 'Diamond' },
+  ],
+  4: [
+    { place: '1st', team: 'Aimless eSports', bracket: 'Diamond' },
+    { place: '2nd', team: 'UKN Fantasia', bracket: 'Diamond' },
+    { place: '3rd', team: 'Kevin Fan Club', bracket: 'Diamond' },
+  ],
+  3: [{ place: '1st', team: 'Topaz Titans', bracket: 'Diamond' }],
+};
+
+const tbdAllStars: HOFAllStar[] = [
+  { category: 'Overall', name: 'TBD Player' },
+  { category: 'Tank', name: 'TBD Player' },
+  { category: 'DPS', name: 'TBD Player' },
+  { category: 'Support', name: 'TBD Player' },
+];
+
+const historicalAllStars: Record<number, HOFAllStar[]> = {
+  7: [
+    { category: 'Overall', name: 'Sunline' },
+    { category: 'Tank', name: 'Magoo' },
+    { category: 'DPS', name: 'Omega Doggo' },
+    { category: 'Support', name: 'Seer' },
+  ],
+};
+
 export const hofSeasons: HOFSeason[] = [8, 7, 6, 5, 4, 3].map((season) => ({
   season,
-  podium: [
-    { place: '1st', team: `TBD Champion S${season}`, bracket: 'Diamond' },
-    { place: '2nd', team: `TBD Runner-up S${season}`, bracket: 'Diamond' },
-    { place: '3rd', team: `TBD 3rd Place S${season}`, bracket: 'Diamond' },
-  ],
-  allStars:
-    season === 7 || season === 8
-      ? [
-          { category: 'Overall', name: 'TBD Player' },
-          { category: 'Tank', name: 'TBD Player' },
-          { category: 'DPS', name: 'TBD Player' },
-          { category: 'Support', name: 'TBD Player' },
-        ]
-      : [],
+  podium:
+    historicalPodiums[season] ??
+    (season === 8
+      ? [...bracketPodium(season, 'Diamond'), ...bracketPodium(season, 'Platinum')]
+      : bracketPodium(season, 'Diamond')),
+  allStars: historicalAllStars[season] ?? (season === 8 ? tbdAllStars : []),
 }));
 
 export function getHofSeason(season: number): HOFSeason | undefined {

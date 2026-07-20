@@ -1,9 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { leadership, externalLinks } from '../data/site';
-import { forMarquee } from '../lib/marquee';
 
-const leadershipCarousel = forMarquee(leadership);
+const coreLeadership = leadership.filter((ld) => ld.role !== 'Staff');
+const staffLeadership = leadership.filter((ld) => ld.role === 'Staff');
 ---
 
 <Layout title="About">
@@ -31,11 +31,11 @@ const leadershipCarousel = forMarquee(leadership);
         Built on Discord
       </div>
       <h2 class="mb-3.5 font-display text-3xl font-bold leading-tight text-ink">
-        Everything happens in one place
+        Metal rank players, meet your match.
       </h2>
       <p class="mb-[22px] text-[15px] leading-relaxed text-muted-soft">
-        Sign-ups, scrim finding, weekly matchups, results, and rules disputes — it's all coordinated live in our
-        Discord. This site is a window into it, not a replacement.
+        Scrim finding, weekly matchups, results, and an ever growing community — it's all coordinated live in our
+        Discord. Come join the fun.
       </p>
       <a
         href={externalLinks.discord}
@@ -48,31 +48,36 @@ const leadershipCarousel = forMarquee(leadership);
     </div>
     <div class="flex flex-col gap-3.5 rounded-2xl border border-[#5865f2]/25 bg-bg-raised p-7">
       <div class="font-display text-[15px] font-bold text-ink">In the server</div>
-      <div class="flex gap-2.5 text-[13.5px] text-muted-soft"><span class="text-gold">—</span> Team &amp; player sign-ups</div>
-      <div class="flex gap-2.5 text-[13.5px] text-muted-soft"><span class="text-gold">—</span> Weekly matchup announcements</div>
-      <div class="flex gap-2.5 text-[13.5px] text-muted-soft"><span class="text-gold">—</span> Live scrim finding channels</div>
-      <div class="flex gap-2.5 text-[13.5px] text-muted-soft"><span class="text-gold">—</span> Referee &amp; dispute support</div>
+      <div class="flex gap-2.5 text-[13.5px] text-muted-soft"><span class="text-gold">—</span> Dedicated tournament channels</div>    
+      <div class="flex gap-2.5 text-[13.5px] text-muted-soft"><span class="text-gold">—</span> Looking for team &amp; player channels</div>
+      <div class="flex gap-2.5 text-[13.5px] text-muted-soft"><span class="text-gold">—</span> Metal rank scrim finder</div>
+      <div class="flex gap-2.5 text-[13.5px] text-muted-soft"><span class="text-gold">—</span> High rank scrim finder</div>
     </div>
   </section>
 
   <!-- LEADERSHIP -->
-  <section class="overflow-hidden pt-15">
-    <div class="mx-auto mb-7 max-w-5xl text-center">
+  <section class="mx-auto max-w-5xl px-8 pt-15">
+    <div class="mb-7 text-center">
       <h2 class="mb-1.5 font-display text-[26px] font-bold text-ink">LFGS Leadership</h2>
       <p class="text-sm text-muted">The owner, mods, and staff keeping the server running</p>
     </div>
-    <div class="relative [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]">
-      <div class="animate-marquee-slow flex w-max gap-7">
-        {leadershipCarousel.map((ld, i) => (
-          <div class="flex w-[130px] shrink-0 flex-col items-center gap-2.5 rounded-xl border border-gold/14 bg-bg-raised px-3 py-5" key={i}>
-            <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[repeating-linear-gradient(45deg,#1c1b20,#1c1b20_8px,#201f24_8px,#201f24_16px)] text-center font-mono text-[9px] text-faint">
-              profile photo
-            </div>
-            <div class="text-center font-display text-[15px] font-bold text-ink">{ld.name}</div>
-            <div class="text-center text-[11px] font-semibold uppercase tracking-wide text-gold">{ld.role}</div>
-          </div>
-        ))}
-      </div>
+    <div class="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {coreLeadership.map((ld) => (
+        <div class="flex flex-col items-center gap-3 rounded-[14px] border border-gold/14 bg-bg-raised px-[14px] py-6">
+          <img src={ld.photo} alt={ld.name} class="h-[77px] w-[77px] rounded-full object-cover object-center" />
+          <div class="text-center font-display text-[18px] font-bold text-ink">{ld.name}</div>
+          <div class="text-center text-[13px] font-semibold uppercase tracking-wide text-gold">{ld.role}</div>
+        </div>
+      ))}
+    </div>
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
+      {staffLeadership.map((ld) => (
+        <div class="flex flex-col items-center gap-3 rounded-[14px] border border-gold/14 bg-bg-raised px-[14px] py-6">
+          <img src={ld.photo} alt={ld.name} class="h-[77px] w-[77px] rounded-full object-cover object-center" />
+          <div class="text-center font-display text-[18px] font-bold text-ink">{ld.name}</div>
+          <div class="text-center text-[13px] font-semibold uppercase tracking-wide text-gold">{ld.role}</div>
+        </div>
+      ))}
     </div>
   </section>
 
@@ -102,9 +107,7 @@ const leadershipCarousel = forMarquee(leadership);
           <div class="text-[13px] font-semibold text-youtube">youtube.com/@lfgs7475 →</div>
         </a>
       </div>
-      <div class="mt-5 rounded-xl border border-dashed border-gold/25 bg-[#1a191e] p-5 text-center font-mono text-[13px] text-faint">
-        Latest montage embed — drops in once Season 8 wraps
-      </div>
+      <!-- TODO: latest montage embed goes here once Season 8 wraps -->
     </div>
   </section>
 

@@ -9,18 +9,68 @@ export function getStaticPaths() {
 
 const { bracket: bracketSlug } = Astro.params;
 const bracket = bracketFromSlug(bracketSlug!);
+
+// TODO: update once real per-bracket week counts are known post-registration.
+const platinumWeekCount = 1;
+const diamondWeekCount = 1;
+const weekCount = bracket === 'Platinum' ? platinumWeekCount : diamondWeekCount;
+const weeks = Array.from({ length: weekCount }, (_, i) => i + 1);
+
+function weekPairingBasis(week: number) {
+  return week === 1
+    ? 'Week 1 pairings are randomized per the rulebook once registration closes'
+    : `Week ${week} pairings are set by Swiss standings from the prior week`;
+}
 ---
 
 <Layout title={`${bracket} Matchups`}>
   <div class="mx-auto max-w-6xl px-8 pb-20 pt-10">
     <TournamentNav activeTab="matchups" bracket={bracket} />
 
-    <div class="rounded-xl border border-gold/12 bg-bg-raised p-8 text-center">
-      <div class="mb-2 font-display text-lg font-bold text-ink">Matchups TBD</div>
-      <div class="text-sm text-muted">
-        Week 1 pairings are randomized per the rulebook once registration closes; later weeks pair teams by Swiss
-        standings. Check back once the {bracket} regular season is underway.
-      </div>
+    <div class="mb-6 flex flex-wrap gap-2 rounded-[10px] border border-gold/15 bg-bg-raised p-[5px]" data-week-tabs>
+      {weeks.map((w) => (
+        <button
+          type="button"
+          data-week-tab={w}
+          class:list={[
+            'rounded-[7px] px-4 py-2 font-display text-sm font-bold',
+            w === 1 ? 'bg-gold text-bg' : 'text-muted-softer hover:text-ink',
+          ]}
+        >
+          Week {w}
+        </button>
+      ))}
     </div>
+
+    {weeks.map((w) => (
+      <div data-week-panel={w} class:list={['rounded-xl border border-gold/12 bg-bg-raised p-8 text-center', w !== 1 && 'hidden']}>
+        <div class="mb-2 font-display text-lg font-bold text-ink">Matchups TBD</div>
+        <div class="text-sm text-muted">
+          {weekPairingBasis(w)}. Check back once the {bracket} regular season is underway.
+        </div>
+      </div>
+    ))}
   </div>
 </Layout>
+
+<script>
+  const tabs = document.querySelector('[data-week-tabs]');
+
+  tabs?.addEventListener('click', (event) => {
+    const button = (event.target as Element).closest('[data-week-tab]');
+    if (!button) return;
+    const week = button.getAttribute('data-week-tab');
+
+    tabs.querySelectorAll('[data-week-tab]').forEach((tab) => {
+      const active = tab === button;
+      tab.classList.toggle('bg-gold', active);
+      tab.classList.toggle('text-bg', active);
+      tab.classList.toggle('text-muted-softer', !active);
+      tab.classList.toggle('hover:text-ink', !active);
+    });
+
+    document.querySelectorAll('[data-week-panel]').forEach((panel) => {
+      panel.classList.toggle('hidden', panel.getAttribute('data-week-panel') !== week);
+    });
+  });
+</script>

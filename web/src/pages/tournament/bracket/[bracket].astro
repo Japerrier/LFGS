@@ -16,32 +16,41 @@ const bracket = bracketFromSlug(bracketSlug!);
     <TournamentNav activeTab="bracket" bracket={bracket} />
 
     <div class="mb-6 rounded-lg border border-gold/20 bg-gold/8 px-4 py-3 text-[13.5px] text-muted">
-      Double-elimination Final 4. Seeds populate once the {bracket} regular season concludes.
+      Single-elimination Final 8. Seeds populate once the {bracket} regular season concludes.
     </div>
 
     <div class="grid grid-cols-1 gap-8 sm:grid-cols-3">
       <div class="flex flex-col gap-5">
-        <div class="font-display text-[13px] font-bold uppercase tracking-wide text-gold">Winners Semis</div>
+        <div class="font-display text-[13px] font-bold uppercase tracking-wide text-gold">Quarterfinals</div>
         <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5">
           <div class="text-sm text-muted-softer">Seed 1 — TBD</div>
           <div class="text-xs text-faint">vs</div>
+          <div class="text-sm text-muted-softer">Seed 8 — TBD</div>
+        </div>
+        <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5">
           <div class="text-sm text-muted-softer">Seed 4 — TBD</div>
+          <div class="text-xs text-faint">vs</div>
+          <div class="text-sm text-muted-softer">Seed 5 — TBD</div>
         </div>
         <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5">
           <div class="text-sm text-muted-softer">Seed 2 — TBD</div>
           <div class="text-xs text-faint">vs</div>
+          <div class="text-sm text-muted-softer">Seed 7 — TBD</div>
+        </div>
+        <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5">
           <div class="text-sm text-muted-softer">Seed 3 — TBD</div>
+          <div class="text-xs text-faint">vs</div>
+          <div class="text-sm text-muted-softer">Seed 6 — TBD</div>
         </div>
       </div>
 
       <div class="flex flex-col gap-5">
-        <div class="font-display text-[13px] font-bold uppercase tracking-wide text-gold">Winners Final</div>
+        <div class="font-display text-[13px] font-bold uppercase tracking-wide text-gold">Semifinals</div>
         <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5">
           <div class="text-sm text-muted-softer">TBD</div>
           <div class="text-xs text-faint">vs</div>
           <div class="text-sm text-muted-softer">TBD</div>
         </div>
-        <div class="mt-2 font-display text-[13px] font-bold uppercase tracking-wide text-gold">Losers Final</div>
         <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5">
           <div class="text-sm text-muted-softer">TBD</div>
           <div class="text-xs text-faint">vs</div>
@@ -55,7 +64,6 @@ const bracket = bracketFromSlug(bracketSlug!);
           <div class="text-[15px] font-semibold text-ink">TBD</div>
           <div class="text-xs text-faint">vs</div>
           <div class="text-[15px] font-semibold text-ink">TBD</div>
-          <div class="mt-1 text-[11.5px] text-muted">Bracket reset if Losers Final winner takes it</div>
         </div>
       </div>
     </div>
