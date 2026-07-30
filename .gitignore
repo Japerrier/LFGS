@@ -21,3 +21,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# real data typed into seed scripts — not for the public repo
+scripts/*.data.mjs
