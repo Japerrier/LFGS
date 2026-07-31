@@ -30,8 +30,8 @@ async function seedTeams() {
   const items = teams.map((team) => ({
     PutRequest: {
       Item: {
-        teamId: `team_${crypto.randomUUID()}`,
         ...team,
+        teamId: `team_${crypto.randomUUID()}`,
       },
     },
   }));
