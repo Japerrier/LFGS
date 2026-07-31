@@ -3,7 +3,7 @@
 // AWS_PROFILE env var) with write access to the table, and the correct AWS
 // region resolvable from your environment.
 //
-// Usage: node seed-teams.mjs
+// Usage: $env:AWS_PROFILE = "lfgs"; node seed-teams.mjs
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
