@@ -7,7 +7,7 @@
 // AWS_PROFILE env var) with read access to Teams and write access to
 // Team_Members, plus the correct AWS region resolvable from your environment.
 //
-// Usage: node seed-team-members.mjs
+// Usage: $env:AWS_PROFILE = "lfgs"; node seed-team-members.mjs
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, ScanCommand, BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
@@ -52,7 +52,7 @@ async function seedTeamMembers() {
     PutRequest: {
       Item: {
         ...member,
-        memberId: `member_${crypto.randomUUID()}`,
+        memberId: `memberId_${crypto.randomUUID()}`,
         season: seasonByTeamId.get(member.teamId),
       },
     },

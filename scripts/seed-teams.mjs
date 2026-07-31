@@ -31,7 +31,7 @@ async function seedTeams() {
     PutRequest: {
       Item: {
         ...team,
-        teamId: `team_${crypto.randomUUID()}`,
+        teamId: `teamId_${crypto.randomUUID()}`,
       },
     },
   }));
