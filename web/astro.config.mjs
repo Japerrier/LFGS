@@ -12,6 +12,7 @@ export default defineConfig({
     '/tournament': '/tournament/schedule',
     '/tournament/teams': '/tournament/teams/diamond',
     '/tournament/matchups': '/tournament/matchups/diamond',
+    '/tournament/standings': '/tournament/standings/diamond',
     '/tournament/bracket': '/tournament/bracket/diamond',
     '/hall-of-fame': '/hall-of-fame/8',
   },
