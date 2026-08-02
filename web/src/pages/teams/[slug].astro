@@ -1,13 +1,20 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { teams } from '../../data/teams';
+import { getMembersByTeamId, memberRoles } from '../../data/team-members';
 import { bracketToSlug } from '../../lib/brackets';
 
-export function getStaticPaths() {
-  return teams.map((t) => ({ params: { slug: t.slug }, props: { team: t } }));
+export async function getStaticPaths() {
+  return Promise.all(
+    teams.map(async (t) => ({
+      params: { slug: t.slug },
+      props: { team: t, members: await getMembersByTeamId(t.teamId) },
+    }))
+  );
 }
 
-const { team } = Astro.props;
+const { team, members } = Astro.props;
+const roster = members.filter((m) => m.memberType === 'Player');
 ---
 
 <Layout title={team.name}>
@@ -40,9 +47,36 @@ const { team } = Astro.props;
     <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[2fr_1fr]">
       <div>
         <h2 class="mb-4 font-display text-xl font-bold text-ink">Roster</h2>
-        <div class="mb-8 rounded-xl border border-gold/12 bg-bg-raised p-6 text-sm text-muted">
-          Rosters haven't been added for Season 8 yet — check back soon.
-        </div>
+        {roster.length === 0 ? (
+          <div class="mb-8 rounded-xl border border-gold/12 bg-bg-raised p-6 text-sm text-muted">
+            Rosters haven't been added for Season 8 yet — check back soon.
+          </div>
+        ) : (
+          <div class="mb-8 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+            {roster.map((p) => (
+              <div class="overflow-hidden rounded-xl border border-gold/12 bg-bg-raised">
+                {p.profileImageKey ? (
+                  <img src={`/media/${p.profileImageKey}`} alt={`${p.name} profile`} class="h-30 w-full object-cover" />
+                ) : (
+                  <div class="flex h-30 items-center justify-center bg-[repeating-linear-gradient(45deg,#1c1b20,#1c1b20_10px,#201f24_10px,#201f24_20px)] text-center font-mono text-[11px] text-faint">
+                    profile
+                  </div>
+                )}
+                <div class="p-3.5">
+                  <div class="mb-2 flex items-center gap-1.5">
+                    <div class="font-display text-base font-bold text-ink">{p.name}</div>
+                    {p.captain && <span class="text-[13px] text-gold">★</span>}
+                  </div>
+                  <div class="flex flex-wrap gap-1.5">
+                    {memberRoles(p).map((r) => (
+                      <span class="rounded-full bg-gold/10 px-2.5 py-[3px] text-[11px] font-semibold text-gold">{r}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <h2 class="mb-4 font-display text-xl font-bold text-ink">Match History</h2>
         <div class="rounded-xl border border-gold/12 bg-bg-raised p-6 text-sm text-muted">

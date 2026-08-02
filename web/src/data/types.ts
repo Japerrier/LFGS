@@ -10,6 +10,23 @@ export interface Team {
   logoKey?: string;
 }
 
+export type MemberType = 'Player' | 'Coach' | 'Manager';
+
+export interface TeamMember {
+  memberId: string;
+  teamId: string;
+  season: number;
+  name: string;
+  memberType: MemberType;
+  captain?: boolean;
+  registeredForTank?: boolean;
+  registeredForDps?: boolean;
+  registeredForSupport?: boolean;
+  profileImageKey?: string;
+  smallProfileImageKey?: string;
+  seasonScreenshotImageKeys?: string[];
+}
+
 export interface KeyDate {
   label: string;
   date: string;
