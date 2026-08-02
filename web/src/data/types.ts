@@ -10,7 +10,7 @@ export interface Team {
   logoKey?: string;
 }
 
-export type MemberType = 'Player' | 'Coach' | 'Manager';
+export type MemberType = 'Player' | 'Head Coach' | 'Assistant Coach';
 
 export interface TeamMember {
   memberId: string;
