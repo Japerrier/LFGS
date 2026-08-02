@@ -1,33 +1,13 @@
 export type Bracket = 'Diamond' | 'Platinum';
 
-export interface Player {
-  id: string;
-  name: string;
-  ign: string;
-  roles: string[];
-  captain: boolean;
-}
-
-export interface SocialLink {
-  label: string;
-  url: string;
-}
-
 export interface Team {
-  id: string;
+  teamId: string;
+  /** Derived from name at load time — not a stored DynamoDB attribute. */
   slug: string;
+  season: number;
   name: string;
   bracket: Bracket;
-  seed: number;
-  initials: string;
-  primaryColor: string;
-  secondaryColor: string;
-  /** Live-ish field: expected to be re-fetched/revalidated from the API rather than trusted from the static build. */
-  record: string;
-  coach: string;
-  manager: string;
-  players: Player[];
-  socials: SocialLink[];
+  logoKey?: string;
 }
 
 export interface KeyDate {

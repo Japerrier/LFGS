@@ -26,23 +26,16 @@ const bracketTeams = getTeamsByBracket(bracket);
         {bracketTeams.map((t) => (
           <a
             href={`/teams/${t.slug}`}
-            class="flex flex-col gap-3.5 rounded-xl border border-gold/14 bg-bg-raised p-[22px]"
+            class="flex items-center gap-3.5 rounded-xl border border-gold/14 bg-bg-raised p-[22px]"
           >
-            <div class="flex items-center gap-3.5">
-              <div
-                class="flex h-13 w-13 shrink-0 items-center justify-center rounded-[10px] font-display text-lg font-bold text-bg"
-                style={`background:linear-gradient(135deg,${t.primaryColor},${t.secondaryColor})`}
-              >
-                {t.initials}
+            {t.logoKey ? (
+              <img src={`/media/${t.logoKey}`} alt={`${t.name} logo`} class="h-13 w-13 shrink-0 rounded-[10px] object-cover" />
+            ) : (
+              <div class="flex h-13 w-13 shrink-0 items-center justify-center rounded-[10px] bg-[repeating-linear-gradient(45deg,#1c1b20,#1c1b20_8px,#201f24_8px,#201f24_16px)] font-mono text-[9px] text-faint">
+                logo
               </div>
-              <div>
-                <div class="font-display text-[19px] font-bold text-ink">{t.name}</div>
-              </div>
-            </div>
-            <div class="flex justify-between border-t border-white/6 pt-3 text-[13px] text-muted-soft">
-              <span>Record: {t.record}</span>
-              <span>{t.players.length} players</span>
-            </div>
+            )}
+            <div class="font-display text-[19px] font-bold text-ink">{t.name}</div>
           </a>
         ))}
       </div>

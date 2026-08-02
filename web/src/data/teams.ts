@@ -1,17 +1,44 @@
-import type { Team } from './types';
+import { QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { dynamoDb } from '../lib/dynamodb';
+import { CURRENT_SEASON } from '../lib/season';
+import type { Bracket, Team } from './types';
 
-/**
- * Real roster data isn't wired up yet (that's the next stage — querying Teams
- * and Team_Members from DynamoDB at build time). Empty for now so the site
- * reflects that Season 8 doesn't have any teams entered yet, rather than
- * showing stale placeholder rosters.
- */
-export const teams: Team[] = [];
+const TEAMS_TABLE = 'Teams';
+
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+// DynamoDB test data has been entered as lowercase ("diamond"); normalize to
+// the capitalized form the rest of the app compares against.
+function normalizeBracket(bracket: string): Bracket {
+  return (bracket.charAt(0).toUpperCase() + bracket.slice(1).toLowerCase()) as Bracket;
+}
+
+const { Items } = await dynamoDb.send(
+  new QueryCommand({
+    TableName: TEAMS_TABLE,
+    KeyConditionExpression: 'season = :season',
+    ExpressionAttributeValues: { ':season': CURRENT_SEASON },
+  })
+);
+
+export const teams: Team[] = (Items ?? []).map((item) => ({
+  teamId: item.teamId,
+  slug: slugify(item.name),
+  season: item.season,
+  name: item.name,
+  bracket: normalizeBracket(item.bracket),
+  logoKey: item.logoKey,
+}));
 
 export function getTeamBySlug(slug: string): Team | undefined {
   return teams.find((t) => t.slug === slug);
 }
 
-export function getTeamsByBracket(bracket: Team['bracket']): Team[] {
+export function getTeamsByBracket(bracket: Bracket): Team[] {
   return teams.filter((t) => t.bracket === bracket);
 }

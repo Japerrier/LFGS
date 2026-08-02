@@ -76,12 +76,13 @@ const quickLinks = [
           <div class="flex flex-nowrap justify-center gap-[54px]" data-team-track>
             {teams.map((t) => (
               <a href={`/teams/${t.slug}`} class="flex w-33 shrink-0 flex-col items-center gap-3">
-                <div
-                  class="flex h-[102px] w-[102px] items-center justify-center rounded-[21px] font-display text-[30px] font-bold text-bg"
-                  style={`background:linear-gradient(135deg,${t.primaryColor},${t.secondaryColor})`}
-                >
-                  {t.initials}
-                </div>
+                {t.logoKey ? (
+                  <img src={`/media/${t.logoKey}`} alt={`${t.name} logo`} class="h-[102px] w-[102px] rounded-[21px] object-cover" />
+                ) : (
+                  <div class="flex h-[102px] w-[102px] items-center justify-center rounded-[21px] bg-[repeating-linear-gradient(45deg,#1c1b20,#1c1b20_8px,#201f24_8px,#201f24_16px)] font-mono text-[11px] text-faint">
+                    logo
+                  </div>
+                )}
                 <div class="w-33 truncate text-center text-[17px] text-muted">{t.name}</div>
               </a>
             ))}
