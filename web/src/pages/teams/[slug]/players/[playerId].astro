@@ -1,8 +1,80 @@
 ---
-// Individual player pages depend on Team_Members data, which isn't wired up
-// yet — no pages get generated until that's in place. The Roster section on
-// the team page links here once real rosters exist.
-export function getStaticPaths() {
-  return [];
+import Layout from '../../../../layouts/Layout.astro';
+import { teams } from '../../../../data/teams';
+import { getMembersByTeamId, memberRoles } from '../../../../data/team-members';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const team of teams) {
+    const members = await getMembersByTeamId(team.teamId);
+    const roster = members.filter((m) => m.memberType === 'Player');
+    for (const player of roster) {
+      paths.push({
+        params: { slug: team.slug, playerId: player.memberId },
+        props: { team, player },
+      });
+    }
+  }
+  return paths;
 }
+
+const { team, player } = Astro.props;
+const roles = memberRoles(player);
+// Label each screenshot with its real season number before reversing, so the
+// labels stay correct (season 3, 2, 1) regardless of display order — and so a
+// player missing a later season (e.g. no season 3 yet) doesn't shift labels.
+const screenshots = (player.seasonScreenshotImageKeys ?? [])
+  .map((key, i) => ({ key, season: i + 1 }))
+  .reverse();
 ---
+
+<Layout title={`${player.name} — ${team.name}`}>
+  <div class="mx-auto max-w-3xl px-8 pb-20 pt-8">
+    <a href={`/teams/${team.slug}`} class="mb-5 inline-flex items-center gap-1.5 text-[13.5px] text-muted">
+      ← Back to {team.name}
+    </a>
+
+    <div class="mb-7 flex items-center gap-4.5">
+      {team.logoKey ? (
+        <img src={`/media/${team.logoKey}`} alt={`${team.name} logo`} class="h-16 w-16 shrink-0 rounded-xl object-cover" />
+      ) : (
+        <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[repeating-linear-gradient(45deg,#1c1b20,#1c1b20_8px,#201f24_8px,#201f24_16px)] font-mono text-[10px] text-faint">
+          logo
+        </div>
+      )}
+      <div>
+        <div class="flex items-center gap-2">
+          <div class="font-display text-[28px] font-bold text-ink">{player.name}</div>
+          {player.captain && <span class="text-lg text-gold">★</span>}
+        </div>
+        <div class="text-[13.5px] text-muted">{team.name}</div>
+      </div>
+    </div>
+
+    {roles.length > 0 && (
+      <div class="mb-7 flex flex-wrap gap-1.5">
+        {roles.map((r) => (
+          <span class="rounded-full bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">{r}</span>
+        ))}
+      </div>
+    )}
+
+    <h2 class="mb-1.5 font-display text-lg font-bold text-ink">Season Screenshots</h2>
+    <p class="mb-3.5 text-[13px] text-muted">Screenshots from this player's previous seasons.</p>
+    {screenshots.length === 0 ? (
+      <div class="rounded-[10px] border border-gold/12 bg-bg-raised p-6 text-sm text-muted">
+        No season screenshots available yet.
+      </div>
+    ) : (
+      <div class="flex flex-col gap-3.5">
+        {screenshots.map(({ key, season }) => (
+          <img
+            src={`/media/${key}`}
+            alt={`${player.name} season ${season} screenshot`}
+            class="h-30 w-full rounded-[10px] object-cover"
+          />
+        ))}
+      </div>
+    )}
+  </div>
+</Layout>
