@@ -2,6 +2,7 @@
 import Layout from '../../../../layouts/Layout.astro';
 import { teams, teamInitials } from '../../../../data/teams';
 import { getMembersByTeamId, memberRoles } from '../../../../data/team-members';
+import { slugify } from '../../../../lib/slug';
 
 export async function getStaticPaths() {
   const paths = [];
@@ -10,7 +11,7 @@ export async function getStaticPaths() {
     const roster = members.filter((m) => m.memberType === 'Player');
     for (const player of roster) {
       paths.push({
-        params: { slug: team.slug, playerId: player.memberId },
+        params: { slug: team.slug, playerId: slugify(player.name) },
         props: { team, player },
       });
     }

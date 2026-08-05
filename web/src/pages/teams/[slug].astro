@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import { teams, teamInitials } from '../../data/teams';
 import { getMembersByTeamId, memberRoles } from '../../data/team-members';
 import { bracketToSlug } from '../../lib/brackets';
+import { slugify } from '../../lib/slug';
 
 export async function getStaticPaths() {
   return Promise.all(
@@ -57,7 +58,7 @@ const captain = roster.find((m) => m.captain);
         ) : (
           <div class="mb-8 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
             {roster.map((p) => (
-              <a href={`/teams/${team.slug}/players/${p.memberId}`} class="overflow-hidden rounded-xl border border-gold/12 bg-bg-raised">
+              <a href={`/teams/${team.slug}/players/${slugify(p.name)}`} class="overflow-hidden rounded-xl border border-gold/12 bg-bg-raised">
                 {p.profileImageKey ? (
                   <img src={`/media/${p.profileImageKey}`} alt={`${p.name} profile`} class="h-30 w-full object-cover" />
                 ) : (

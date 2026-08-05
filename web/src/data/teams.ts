@@ -1,16 +1,10 @@
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { dynamoDb } from '../lib/dynamodb';
 import { CURRENT_SEASON } from '../lib/season';
+import { slugify } from '../lib/slug';
 import type { Bracket, Team } from './types';
 
 const TEAMS_TABLE = 'Teams';
-
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 // DynamoDB test data has been entered as lowercase ("diamond"); normalize to
 // the capitalized form the rest of the app compares against.
