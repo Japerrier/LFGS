@@ -30,7 +30,7 @@ const screenshots = (player.seasonScreenshotImageKeys ?? [])
 ---
 
 <Layout title={`${player.name} — ${team.name}`}>
-  <div class="mx-auto max-w-3xl px-8 pb-20 pt-8">
+  <div class="mx-auto max-w-5xl px-8 pb-20 pt-8">
     <a href={`/teams/${team.slug}`} class="mb-5 inline-flex items-center gap-1.5 text-[13.5px] text-muted">
       ← Back to {team.name}
     </a>
@@ -72,10 +72,47 @@ const screenshots = (player.seasonScreenshotImageKeys ?? [])
           <img
             src={`/media/${key}`}
             alt={`${player.name} season ${season} screenshot`}
-            class="h-30 w-full rounded-[10px] object-cover"
+            class="w-full cursor-zoom-in rounded-[10px]"
+            data-lightbox-trigger
           />
         ))}
       </div>
     )}
   </div>
+
+  <div
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 p-8"
+    data-lightbox-overlay
+  >
+    <img src="" alt="" class="max-h-full max-w-full rounded-lg object-contain" data-lightbox-img />
+  </div>
+
+  <script>
+    function setupLightbox() {
+      const overlay = document.querySelector<HTMLElement>('[data-lightbox-overlay]');
+      const overlayImg = document.querySelector<HTMLImageElement>('[data-lightbox-img]');
+      if (!overlay || !overlayImg) return;
+
+      const close = () => {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+      };
+
+      document.querySelectorAll<HTMLImageElement>('[data-lightbox-trigger]').forEach((img) => {
+        img.addEventListener('click', () => {
+          overlayImg.src = img.src;
+          overlayImg.alt = img.alt;
+          overlay.classList.remove('hidden');
+          overlay.classList.add('flex');
+        });
+      });
+
+      overlay.addEventListener('click', close);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close();
+      });
+    }
+
+    setupLightbox();
+  </script>
 </Layout>
