@@ -59,12 +59,8 @@ const captain = roster.find((m) => m.captain);
           <div class="mb-8 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
             {roster.map((p) => (
               <a href={`/teams/${team.slug}/players/${slugify(p.name)}`} class="overflow-hidden rounded-xl border border-gold/12 bg-bg-raised">
-                {p.profileImageKey ? (
+                {p.profileImageKey && (
                   <img src={`/media/${p.profileImageKey}`} alt={`${p.name} profile`} class="h-30 w-full object-cover" />
-                ) : (
-                  <div class="flex h-30 items-center justify-center bg-[repeating-linear-gradient(45deg,#1c1b20,#1c1b20_10px,#201f24_10px,#201f24_20px)] text-center font-mono text-[11px] text-faint">
-                    profile
-                  </div>
                 )}
                 <div class="p-3.5">
                   <div class="mb-2 flex items-center gap-1.5">
