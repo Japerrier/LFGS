@@ -25,6 +25,14 @@
   --color-youtube: #ff3c3c;
 }
 
+/* Primary content container: 65% of viewport, capped at what 65% equals on
+   a 4K (3840px) screen — so it's a consistent 65% across 1080p/1440p/4K, and
+   only gets proportionally smaller past 4K (ultrawide, 5K, 8K). */
+@utility content-width {
+  width: 65%;
+  max-width: 2496px;
+}
+
 @keyframes lfgs-marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }

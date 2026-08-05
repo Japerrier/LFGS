@@ -48,7 +48,7 @@ const quickLinks = [
   </section>
 
   <!-- QUICK ACCESS -->
-  <section class="mx-auto max-w-6xl px-8 py-16">
+  <section class="content-width mx-auto px-8 py-16">
     <h2 class="mb-7 text-center font-display text-[28px] font-bold text-ink">Tournament Quick Access</h2>
     <div class="grid grid-cols-1 gap-[24px] sm:grid-cols-2 lg:grid-cols-4">
       {quickLinks.map((q) => (
@@ -71,7 +71,7 @@ const quickLinks = [
   {teams.length > 0 && (
     <section class="overflow-hidden pb-16">
       <h2 class="mb-7 text-center font-display text-[28px] font-bold text-ink">Season 8 Teams</h2>
-      <div class="mx-auto max-w-6xl px-8">
+      <div class="content-width mx-auto px-8">
         <div class="relative" data-team-carousel>
           <div class="flex flex-nowrap justify-center gap-[54px]" data-team-track>
             {teams.map((t) => (
@@ -140,7 +140,7 @@ const quickLinks = [
 
   <!-- STATS STRIP -->
   <section class="border-y border-gold/12 bg-bg-strip px-8 py-11">
-    <div class="mx-auto grid max-w-5xl grid-cols-1 gap-6 text-center sm:grid-cols-3">
+    <div class="content-width mx-auto grid grid-cols-1 gap-6 text-center sm:grid-cols-3">
       {[
         { value: '8', label: 'Seasons Ran' },
         { value: '5', label: 'Years of Service' },
@@ -155,7 +155,7 @@ const quickLinks = [
   </section>
 
   <!-- WATCH & FOLLOW -->
-  <section class="mx-auto max-w-6xl px-8 py-18">
+  <section class="content-width mx-auto px-8 py-18">
     <h2 class="mb-2 text-center font-display text-[28px] font-bold text-ink">Watch &amp; Follow</h2>
     <p class="mb-8 text-center text-[15px] text-muted">Matches stream live. VODs and montages go up after.</p>
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">

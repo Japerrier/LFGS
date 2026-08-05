@@ -14,7 +14,7 @@ const bracketTeams = getTeamsByBracket(bracket);
 ---
 
 <Layout title={`${bracket} Teams`}>
-  <div class="mx-auto max-w-6xl px-8 pb-20 pt-10">
+  <div class="content-width mx-auto px-8 pb-20 pt-10">
     <TournamentNav activeTab="teams" bracket={bracket} />
 
     {bracketTeams.length === 0 ? (
