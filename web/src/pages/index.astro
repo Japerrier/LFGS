@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { teams } from '../data/teams';
+import { teams, teamInitials } from '../data/teams';
 import { externalLinks } from '../data/site';
 
 const quickLinks = [
@@ -79,8 +79,8 @@ const quickLinks = [
                 {t.logoKey ? (
                   <img src={`/media/${t.logoKey}`} alt={`${t.name} logo`} class="h-[102px] w-[102px] rounded-[21px] object-cover" />
                 ) : (
-                  <div class="flex h-[102px] w-[102px] items-center justify-center rounded-[21px] bg-[repeating-linear-gradient(45deg,#1c1b20,#1c1b20_8px,#201f24_8px,#201f24_16px)] font-mono text-[11px] text-faint">
-                    logo
+                  <div class="flex h-[102px] w-[102px] items-center justify-center rounded-[21px] bg-linear-to-br from-gold-grad-from to-gold-grad-to font-display text-2xl font-bold text-gold-ink">
+                    {teamInitials(t.name)}
                   </div>
                 )}
                 <div class="w-33 truncate text-center text-[17px] text-muted">{t.name}</div>
