@@ -18,8 +18,8 @@ const statusStyles: Record<string, string> = {
     <div class="mb-5 flex flex-col gap-2.5">
       {keyDates.map((d) => (
         <div class="flex flex-wrap items-center gap-5 rounded-[10px] border border-gold/12 bg-bg-raised px-[22px] py-4">
-          <div class="min-w-[190px] font-display text-[17px] font-bold text-gold">{d.label}</div>
-          <div class="min-w-[190px] text-sm text-muted-soft">{d.date}</div>
+          <div class="w-[200px] shrink-0 font-display text-[17px] font-bold text-gold">{d.label}</div>
+          <div class="w-[230px] shrink-0 text-sm text-muted-soft">{d.date}</div>
           <div class="min-w-[180px] flex-1 text-sm text-muted-softer">{d.desc}</div>
           <div class:list={['rounded-full px-3.5 py-1.5 font-display text-xs font-bold', statusStyles[d.status]]}>
             {d.status}
