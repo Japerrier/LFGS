@@ -42,3 +42,13 @@ export function getTeamBySlug(slug: string): Team | undefined {
 export function getTeamsByBracket(bracket: Bracket): Team[] {
   return teams.filter((t) => t.bracket === bracket);
 }
+
+// Fallback for teams without a logo yet — e.g. "Rat Tunnelers" -> "RT".
+export function teamInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase();
+}

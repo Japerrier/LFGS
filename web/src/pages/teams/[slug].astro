@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { teams } from '../../data/teams';
+import { teams, teamInitials } from '../../data/teams';
 import { getMembersByTeamId, memberRoles } from '../../data/team-members';
 import { bracketToSlug } from '../../lib/brackets';
 
@@ -33,8 +33,8 @@ const captain = roster.find((m) => m.captain);
       {team.logoKey ? (
         <img src={`/media/${team.logoKey}`} alt={`${team.name} logo`} class="h-24 w-24 shrink-0 rounded-2xl object-cover" />
       ) : (
-        <div class="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-[repeating-linear-gradient(45deg,#1c1b20,#1c1b20_10px,#201f24_10px,#201f24_20px)] font-mono text-xs text-faint">
-          logo
+        <div class="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-gold-grad-from to-gold-grad-to font-display text-2xl font-bold text-gold-ink">
+          {teamInitials(team.name)}
         </div>
       )}
       <div class="flex-1">

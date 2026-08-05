@@ -1,7 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import TournamentNav from '../../../components/TournamentNav.astro';
-import { getTeamsByBracket } from '../../../data/teams';
+import { getTeamsByBracket, teamInitials } from '../../../data/teams';
 import { BRACKETS, bracketFromSlug, bracketToSlug } from '../../../lib/brackets';
 
 export function getStaticPaths() {
@@ -31,8 +31,8 @@ const bracketTeams = getTeamsByBracket(bracket);
             {t.logoKey ? (
               <img src={`/media/${t.logoKey}`} alt={`${t.name} logo`} class="h-13 w-13 shrink-0 rounded-[10px] object-cover" />
             ) : (
-              <div class="flex h-13 w-13 shrink-0 items-center justify-center rounded-[10px] bg-[repeating-linear-gradient(45deg,#1c1b20,#1c1b20_8px,#201f24_8px,#201f24_16px)] font-mono text-[9px] text-faint">
-                logo
+              <div class="flex h-13 w-13 shrink-0 items-center justify-center rounded-[10px] bg-linear-to-br from-gold-grad-from to-gold-grad-to font-display text-sm font-bold text-gold-ink">
+                {teamInitials(t.name)}
               </div>
             )}
             <div class="font-display text-[19px] font-bold text-ink">{t.name}</div>

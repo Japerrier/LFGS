@@ -1,6 +1,6 @@
 ---
 import Layout from '../../../../layouts/Layout.astro';
-import { teams } from '../../../../data/teams';
+import { teams, teamInitials } from '../../../../data/teams';
 import { getMembersByTeamId, memberRoles } from '../../../../data/team-members';
 
 export async function getStaticPaths() {
@@ -38,8 +38,8 @@ const screenshots = (player.seasonScreenshotImageKeys ?? [])
       {team.logoKey ? (
         <img src={`/media/${team.logoKey}`} alt={`${team.name} logo`} class="h-16 w-16 shrink-0 rounded-xl object-cover" />
       ) : (
-        <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[repeating-linear-gradient(45deg,#1c1b20,#1c1b20_8px,#201f24_8px,#201f24_16px)] font-mono text-[10px] text-faint">
-          logo
+        <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-gold-grad-from to-gold-grad-to font-display text-lg font-bold text-gold-ink">
+          {teamInitials(team.name)}
         </div>
       )}
       <div>
