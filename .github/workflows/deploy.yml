@@ -44,19 +44,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
       # Requires an IAM role in AWS that trusts this repo via GitHub's OIDC
       # provider, plus these repo settings (Settings -> Secrets and variables
-      # -> Actions), none of which exist yet:
+      # -> Actions):
       #   Secret:    AWS_DEPLOY_ROLE_ARN
       #   Variables: AWS_REGION, S3_BUCKET_NAME, CLOUDFRONT_DISTRIBUTION_ID
+      #
+      # Runs before Build, not just before the S3 sync: the build itself
+      # queries DynamoDB at build time (data/teams.ts, data/team-members.ts
+      # use top-level await), so it needs credentials and a region too.
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Build
+        run: npm run build
 
       - name: Sync to S3
         run: aws s3 sync dist/ "s3://${{ vars.S3_BUCKET_NAME }}" --delete
