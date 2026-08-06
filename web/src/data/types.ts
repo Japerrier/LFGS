@@ -45,10 +45,18 @@ export interface HOFAllStar {
   name: string;
 }
 
+export interface HOFPodiumPlayer {
+  name: string;
+  captain?: boolean;
+  roles: string[];
+}
+
 export interface HOFPodiumEntry {
   place: '1st' | '2nd' | '3rd';
   team: string;
   bracket: Bracket;
+  logoKey?: string;
+  players?: HOFPodiumPlayer[];
 }
 
 export interface HOFSeason {

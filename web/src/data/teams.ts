@@ -33,6 +33,22 @@ export function getTeamBySlug(slug: string): Team | undefined {
   return teams.find((t) => t.slug === slug);
 }
 
+// For historical seasons (Hall of Fame), which don't have a `bracket`
+// attribute on their Teams rows — this intentionally skips the bracket
+// mapping the main `teams` query does, since there's nothing to normalize.
+export async function getTeamsBySeason(season: number): Promise<Pick<Team, 'teamId' | 'name' | 'logoKey'>[]> {
+  const { Items } = await dynamoDb.send(
+    new QueryCommand({
+      TableName: TEAMS_TABLE,
+      KeyConditionExpression: 'season = :season',
+      ExpressionAttributeValues: { ':season': season },
+      ProjectionExpression: 'teamId, #n, logoKey',
+      ExpressionAttributeNames: { '#n': 'name' },
+    })
+  );
+  return (Items ?? []) as Pick<Team, 'teamId' | 'name' | 'logoKey'>[];
+}
+
 export function getTeamsByBracket(bracket: Bracket): Team[] {
   return teams.filter((t) => t.bracket === bracket);
 }

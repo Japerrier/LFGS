@@ -1,4 +1,6 @@
-import type { HOFAllStar, HOFPodiumEntry, HOFSeason, KeyDate, LeadershipMember } from './types';
+import { getTeamsBySeason } from './teams';
+import { getMembersByTeamId, memberRoles } from './team-members';
+import type { Bracket, HOFAllStar, HOFPodiumEntry, HOFSeason, KeyDate, LeadershipMember, TeamMember } from './types';
 
 export const externalLinks = {
   discord: 'https://discord.gg/lfgs',
@@ -82,15 +84,59 @@ function bracketPodium(season: number, bracket: 'Diamond' | 'Platinum'): HOFPodi
   ];
 }
 
+// Which team placed where isn't stored anywhere in DynamoDB — it's a fact
+// about the season's outcome, not a team/roster attribute — so it stays
+// here. Logo and roster for each team come from DynamoDB/S3 live (see
+// buildSeason7Podium below) rather than being duplicated in this file.
+const season7Placements: { place: '1st' | '2nd' | '3rd'; teamName: string; bracket: Bracket }[] = [
+  { place: '1st', teamName: 'DAWGS', bracket: 'Diamond' },
+  { place: '2nd', teamName: 'Prune Juice Predators', bracket: 'Diamond' },
+  { place: '3rd', teamName: 'Imperium', bracket: 'Diamond' },
+];
+
+async function buildSeason7Podium(): Promise<HOFPodiumEntry[]> {
+  const teams = await getTeamsBySeason(7);
+  const entries: HOFPodiumEntry[] = [];
+
+  for (const placement of season7Placements) {
+    const team = teams.find((t) => t.name === placement.teamName);
+    const entry: HOFPodiumEntry = { place: placement.place, team: placement.teamName, bracket: placement.bracket };
+    if (!team) {
+      entries.push(entry);
+      continue;
+    }
+
+    if (team.logoKey) entry.logoKey = team.logoKey;
+
+    const members = await getMembersByTeamId(team.teamId);
+    const headCoach = members.find((m) => m.memberType === 'Head Coach');
+    const assistantCoach = members.find((m) => m.memberType === 'Assistant Coach');
+    const captain = members.find((m) => m.memberType === 'Player' && m.captain);
+    const others = members.filter((m) => m.memberType === 'Player' && !m.captain);
+    const ordered = [headCoach, assistantCoach, captain, ...others].filter((m): m is TeamMember => Boolean(m));
+    if (ordered.length > 0) {
+      entry.players = ordered.map((m) => ({
+        name: m.name,
+        captain: Boolean(m.captain),
+        // Coaches don't have tank/dps/support flags — show their coaching
+        // title as the pill instead, same treatment as player roles.
+        roles: m.memberType === 'Player' ? memberRoles(m) : [m.memberType],
+      }));
+    }
+
+    entries.push(entry);
+  }
+
+  return entries;
+}
+
+const season7Podium = await buildSeason7Podium();
+
 // Recorded results for past seasons. Season 3's record only survived for the 1st place
 // finisher — 2nd/3rd weren't tracked. Seasons without an entry here (i.e. Season 8, not yet
 // played) fall back to TBD placeholders.
 const historicalPodiums: Record<number, HOFPodiumEntry[]> = {
-  7: [
-    { place: '1st', team: 'DAWGS', bracket: 'Diamond' },
-    { place: '2nd', team: 'Prune Juice Predators', bracket: 'Diamond' },
-    { place: '3rd', team: 'Imperium', bracket: 'Diamond' },
-  ],
+  7: season7Podium,
   6: [
     { place: '1st', team: 'Fireside Fireflies', bracket: 'Diamond' },
     { place: '2nd', team: 'Last Disaster Final Stand', bracket: 'Diamond' },
