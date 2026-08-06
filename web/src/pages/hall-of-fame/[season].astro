@@ -77,11 +77,16 @@ const badgeStyles: Record<string, string> = {
                     ]}
                   >
                     <div
-                      class:list={['flex gap-4', p.players && p.players.length > 0 ? 'items-start' : 'items-center']}
+                      class:list={['flex gap-5', p.players && p.players.length > 0 ? 'items-start' : 'items-center']}
                     >
-                      {p.logoKey && (
-                        <img src={`/media/${p.logoKey}`} alt={`${p.team} logo`} class="h-13 w-13 shrink-0 rounded-lg object-cover" />
-                      )}
+                      <div
+                        class:list={[
+                          'flex h-13 w-13 shrink-0 items-center justify-center rounded-lg font-display text-[15px] font-bold text-gold-ink',
+                          badgeStyles[p.place],
+                        ]}
+                      >
+                        {p.place}
+                      </div>
                       <div>
                         <div class="font-display text-[19px] font-bold text-ink">{p.team}</div>
                         {p.players && p.players.length > 0 && (
@@ -103,14 +108,9 @@ const badgeStyles: Record<string, string> = {
                         )}
                       </div>
                     </div>
-                    <div
-                      class:list={[
-                        'flex h-13 w-13 shrink-0 items-center justify-center rounded-lg font-display text-[15px] font-bold text-gold-ink',
-                        badgeStyles[p.place],
-                      ]}
-                    >
-                      {p.place}
-                    </div>
+                    {p.logoKey && (
+                      <img src={`/media/${p.logoKey}`} alt={`${p.team} logo`} class="h-46 w-46 shrink-0 rounded-lg object-cover" />
+                    )}
                   </div>
                 ))}
               </div>
@@ -127,10 +127,15 @@ const badgeStyles: Record<string, string> = {
               p.players && p.players.length > 0 ? 'items-start' : 'items-center',
             ]}
           >
-            <div class:list={['flex gap-4', p.players && p.players.length > 0 ? 'items-start' : 'items-center']}>
-              {p.logoKey && (
-                <img src={`/media/${p.logoKey}`} alt={`${p.team} logo`} class="h-13 w-13 shrink-0 rounded-lg object-cover" />
-              )}
+            <div class:list={['flex gap-5', p.players && p.players.length > 0 ? 'items-start' : 'items-center']}>
+              <div
+                class:list={[
+                  'flex h-13 w-13 shrink-0 items-center justify-center rounded-lg font-display text-[15px] font-bold text-gold-ink',
+                  badgeStyles[p.place],
+                ]}
+              >
+                {p.place}
+              </div>
               <div>
                 <div class="font-display text-[19px] font-bold text-ink">{p.team}</div>
                 {p.players && p.players.length > 0 && (
@@ -152,14 +157,9 @@ const badgeStyles: Record<string, string> = {
                 )}
               </div>
             </div>
-            <div
-              class:list={[
-                'flex h-13 w-13 shrink-0 items-center justify-center rounded-lg font-display text-[15px] font-bold text-gold-ink',
-                badgeStyles[p.place],
-              ]}
-            >
-              {p.place}
-            </div>
+            {p.logoKey && (
+              <img src={`/media/${p.logoKey}`} alt={`${p.team} logo`} class="h-46 w-46 shrink-0 rounded-lg object-cover" />
+            )}
           </div>
         ))}
       </div>
