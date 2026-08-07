@@ -14,7 +14,7 @@ export default defineConfig({
     '/tournament/matchups': '/tournament/matchups/diamond',
     '/tournament/standings': '/tournament/standings/diamond',
     '/tournament/bracket': '/tournament/bracket/diamond',
-    '/hall-of-fame': '/hall-of-fame/8',
+    '/hall-of-fame': '/hall-of-fame/7',
   },
 
   vite: {
