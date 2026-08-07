@@ -32,6 +32,7 @@ async function seedTeams() {
       Item: {
         ...team,
         teamId: `teamId_${crypto.randomUUID()}`,
+        S3Name: team.name.toLowerCase().replace(/\s+/g, '-'),
       },
     },
   }));
