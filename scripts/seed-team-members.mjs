@@ -1,22 +1,30 @@
 // Batch-inserts the team members listed in team-members-seed.data.mjs into the
 // Team_Members table. Looks up each referenced teamId in the Teams table first,
 // both to catch typos (DynamoDB won't enforce this relationship for you) and to
-// stamp the correct season onto each member automatically.
+// stamp the correct season and locate the team's S3 folder automatically.
+//
+// For members with memberType "Player", also creates that player's media
+// folder inside their team's S3 folder — coaches/managers/other staff don't
+// get one.
 //
 // Requires AWS credentials configured locally (e.g. `aws configure` or an
-// AWS_PROFILE env var) with read access to Teams and write access to
-// Team_Members, plus the correct AWS region resolvable from your environment.
+// AWS_PROFILE env var) with read access to Teams, write access to
+// Team_Members, and write access to the media bucket, plus the correct AWS
+// region resolvable from your environment.
 //
 // Usage: $env:AWS_PROFILE = "lfgs"; node seed-team-members.mjs
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, ScanCommand, BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { teamMembers } from './team-members-seed.data.mjs';
 
 const TEAMS_TABLE = 'Teams';
 const TEAM_MEMBERS_TABLE = 'Team_Members';
+const MEDIA_BUCKET = 'lfgs-media-011122914860-us-east-1-an';
 
-const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const s3Client = new S3Client({});
 
 function chunk(array, size) {
   const chunks = [];
@@ -26,9 +34,13 @@ function chunk(array, size) {
   return chunks;
 }
 
-async function getSeasonByTeamId() {
-  const { Items } = await client.send(new ScanCommand({ TableName: TEAMS_TABLE }));
-  return new Map((Items ?? []).map((team) => [team.teamId, team.season]));
+function slugifyName(name) {
+  return name.toLowerCase().replace(/\s+/g, '-');
+}
+
+async function getTeamInfoByTeamId() {
+  const { Items } = await dynamoClient.send(new ScanCommand({ TableName: TEAMS_TABLE }));
+  return new Map((Items ?? []).map((team) => [team.teamId, { season: team.season, S3Name: team.S3Name }]));
 }
 
 async function seedTeamMembers() {
@@ -37,10 +49,10 @@ async function seedTeamMembers() {
     return;
   }
 
-  const seasonByTeamId = await getSeasonByTeamId();
+  const teamInfoByTeamId = await getTeamInfoByTeamId();
 
   const missingTeamIds = [...new Set(teamMembers.map((m) => m.teamId))].filter(
-    (teamId) => !seasonByTeamId.has(teamId)
+    (teamId) => !teamInfoByTeamId.has(teamId)
   );
   if (missingTeamIds.length > 0) {
     throw new Error(
@@ -48,19 +60,31 @@ async function seedTeamMembers() {
     );
   }
 
-  const items = teamMembers.map((member) => ({
-    PutRequest: {
-      Item: {
-        ...member,
-        memberId: `memberId_${crypto.randomUUID()}`,
-        season: seasonByTeamId.get(member.teamId),
-      },
-    },
+  const prepared = teamMembers.map((member) => {
+    const memberId = `memberId_${crypto.randomUUID()}`;
+    const { season, S3Name: teamS3Name } = teamInfoByTeamId.get(member.teamId);
+    return { ...member, memberId, season, teamS3Name };
+  });
+
+  for (const member of prepared) {
+    if (member.memberType !== 'Player') continue;
+
+    const playerS3Name = `${slugifyName(member.name)}-${member.memberId.slice(-6)}`;
+    const folderKey = `season-${member.season}/teams/${member.teamS3Name}/${playerS3Name}/`;
+    // Same benign "Stream of unknown length" SDK warning as seed-teams.mjs
+    // for a bodyless PutObject — cosmetic, the folder marker still creates
+    // correctly.
+    await s3Client.send(new PutObjectCommand({ Bucket: MEDIA_BUCKET, Key: folderKey }));
+    console.log(`Created s3://${MEDIA_BUCKET}/${folderKey}`);
+  }
+
+  const items = prepared.map(({ teamS3Name, ...member }) => ({
+    PutRequest: { Item: member },
   }));
 
   // BatchWriteItem caps out at 25 items per request, so send it in chunks.
   for (const batch of chunk(items, 25)) {
-    await client.send(
+    await dynamoClient.send(
       new BatchWriteCommand({
         RequestItems: { [TEAM_MEMBERS_TABLE]: batch },
       })
