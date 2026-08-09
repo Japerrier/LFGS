@@ -20,13 +20,28 @@ const { Items } = await dynamoDb.send(
   })
 );
 
-export const teams: Team[] = (Items ?? []).map((item) => ({
-  teamId: item.teamId,
-  slug: slugify(item.name),
+const rawTeams = (Items ?? []).map((item) => ({
+  teamId: item.teamId as string,
+  baseSlug: slugify(item.name),
   season: item.season,
-  name: item.name,
+  name: item.name as string,
   bracket: normalizeBracket(item.bracket),
   logoKey: item.logoKey,
+}));
+
+// Names aren't required to be unique, so slugs derived from them aren't
+// either. Keep URLs clean (just the name) in the normal case; only when two
+// teams actually collide on the same slug do both get a 6-hex-character
+// suffix from their teamId to disambiguate — teamId's UUID always ends in a
+// 12-char hex segment with no hyphens, so slicing the last 6 is always safe.
+const baseSlugCounts = new Map<string, number>();
+for (const t of rawTeams) {
+  baseSlugCounts.set(t.baseSlug, (baseSlugCounts.get(t.baseSlug) ?? 0) + 1);
+}
+
+export const teams: Team[] = rawTeams.map(({ baseSlug, ...t }) => ({
+  ...t,
+  slug: (baseSlugCounts.get(baseSlug) ?? 0) > 1 ? `${baseSlug}-${t.teamId.slice(-6)}` : baseSlug,
 }));
 
 export function getTeamBySlug(slug: string): Team | undefined {
