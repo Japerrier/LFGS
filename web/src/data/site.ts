@@ -11,30 +11,46 @@ export const externalLinks = {
   registrationForm: 'https://docs.google.com/forms/d/e/1FAIpQLScAPfNzgUQ0QMBST8urLgMzuBUj6eFAjFXlYRg0_9FrShSGMA/viewform',
 };
 
+// status/date are the build-time fallback; activeAt/statusOnceActive drive the
+// real client-side comparison against "now" in America/New_York (see the
+// schedule page's script). Keep status roughly in sync with what activeAt
+// implies as of whenever this file is edited, so there's no flash of wrong
+// content before the client script corrects it on load.
 export const keyDates: KeyDate[] = [
   {
     label: 'Registration Opens',
     date: 'Sat, Jul 11, 2026',
     desc: 'Team sign-ups begin for Diamond & Platinum',
     status: 'Open',
+    activeAt: '2026-07-11T00:00:00',
+    statusOnceActive: 'Open',
   },
   {
     label: 'Registration Closes',
-    date: 'Sun, Aug 9, 2026 · 11:59 PM EST',
+    date: 'Sun, Sep 6, 2026 · 11:59 PM EST',
     desc: 'Last chance to lock in a roster',
     status: 'Closed',
+    activeAt: '2026-09-06T23:59:00',
+    statusOnceActive: 'Closed',
   },
   {
     label: 'Regular Season Begins',
-    date: 'Mon, Aug 17, 2026',
+    date: 'Mon, Sep 14, 2026',
     desc: 'Swiss-format season, 1 official match per week',
     status: 'Upcoming',
+    activeAt: '2026-09-14T00:00:00',
+    // No great single word for "the season is now underway" in this status
+    // set — Closed is standing in for "this date has passed." Easy one-line
+    // change if you'd rather it say something else once Sep 14 arrives.
+    statusOnceActive: 'Closed',
   },
   {
     label: 'Playoffs',
     date: 'TBD by team count',
     desc: 'Single-elimination Final 8, quarterfinals through grand final',
     status: 'TBD',
+    // No real date to compare against — always TBD, no activeAt needed.
+    // TODO: Add Playoffs start date once registration closes and we know how many teams are in each bracket.
   },
 ];
 

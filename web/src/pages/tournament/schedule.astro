@@ -21,7 +21,12 @@ const statusStyles: Record<string, string> = {
           <div class="w-[200px] shrink-0 font-display text-[17px] font-bold text-gold">{d.label}</div>
           <div class="w-[230px] shrink-0 text-sm text-muted-soft">{d.date}</div>
           <div class="min-w-[180px] flex-1 text-sm text-muted-softer">{d.desc}</div>
-          <div class:list={['rounded-full px-3.5 py-1.5 font-display text-xs font-bold', statusStyles[d.status]]}>
+          <div
+            class:list={['rounded-full px-3.5 py-1.5 font-display text-xs font-bold', statusStyles[d.status]]}
+            data-status-pill
+            data-active-at={d.activeAt}
+            data-status-once-active={d.statusOnceActive}
+          >
             {d.status}
           </div>
         </div>
@@ -33,4 +38,51 @@ const statusStyles: Record<string, string> = {
       Pairings after Week 1 are based on standings.
     </div>
   </div>
+
+  <script>
+    // Re-derives each key date's real status from the visitor's actual
+    // "now," compared in America/New_York regardless of where they are —
+    // this is a static site, so the server-rendered status is only a
+    // build-time snapshot and would otherwise go stale between deploys.
+    const STATUS_CLASSES: Record<string, string[]> = {
+      Open: ['bg-gold', 'text-bg'],
+      Closed: ['bg-white/6', 'text-muted'],
+      Upcoming: ['bg-white/6', 'text-muted'],
+      TBD: ['bg-white/6', 'text-muted'],
+    };
+    const ALL_STATUS_CLASSES = Object.values(STATUS_CLASSES).flat();
+
+    function nowInNewYork(): string {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23',
+      }).formatToParts(new Date());
+      const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '00';
+      return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}:${get('second')}`;
+    }
+
+    function updateKeyDateStatuses() {
+      const now = nowInNewYork();
+      document.querySelectorAll<HTMLElement>('[data-status-pill]').forEach((pill) => {
+        const activeAt = pill.dataset.activeAt;
+        const statusOnceActive = pill.dataset.statusOnceActive;
+        // No real date to compare (e.g. Playoffs) — leave the build-time value alone.
+        if (!activeAt || !statusOnceActive) return;
+        // Not reached yet — leave as the build-time "Upcoming" fallback.
+        if (now < activeAt) return;
+
+        pill.textContent = statusOnceActive;
+        pill.classList.remove(...ALL_STATUS_CLASSES);
+        pill.classList.add(...(STATUS_CLASSES[statusOnceActive] ?? STATUS_CLASSES.Closed));
+      });
+    }
+
+    updateKeyDateStatuses();
+  </script>
 </Layout>
