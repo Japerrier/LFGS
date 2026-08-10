@@ -26,7 +26,10 @@ function chunk(array, size) {
 }
 
 function slugifyS3Name(name) {
-  return name.toLowerCase().replace(/\s+/g, '-');
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 async function seedTeams() {
