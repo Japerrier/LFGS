@@ -51,10 +51,9 @@ async function seedTeams() {
 
   for (const team of prepared) {
     const folderKey = `season-${team.season}/teams/${team.S3Name}/`;
-    // The SDK prints a "Stream of unknown length" warning here for a
-    // bodyless PutObject — it's a known cosmetic quirk, not an actual
-    // problem; the empty-marker object is still created correctly.
-    await s3Client.send(new PutObjectCommand({ Bucket: MEDIA_BUCKET, Key: folderKey }));
+    // An explicit zero-length Body (rather than omitting it) avoids the
+    // SDK's "Stream of unknown length" warning for bodyless PutObject calls.
+    await s3Client.send(new PutObjectCommand({ Bucket: MEDIA_BUCKET, Key: folderKey, Body: Buffer.alloc(0) }));
     console.log(`Created s3://${MEDIA_BUCKET}/${folderKey}`);
   }
 

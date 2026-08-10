@@ -74,10 +74,9 @@ async function seedTeamMembers() {
 
     const playerS3Name = `${slugifyName(member.name)}-${member.memberId.slice(-6)}`;
     const folderKey = `season-${member.season}/teams/${member.teamS3Name}/${playerS3Name}/`;
-    // Same benign "Stream of unknown length" SDK warning as seed-teams.mjs
-    // for a bodyless PutObject — cosmetic, the folder marker still creates
-    // correctly.
-    await s3Client.send(new PutObjectCommand({ Bucket: MEDIA_BUCKET, Key: folderKey }));
+    // An explicit zero-length Body (rather than omitting it) avoids the
+    // SDK's "Stream of unknown length" warning for bodyless PutObject calls.
+    await s3Client.send(new PutObjectCommand({ Bucket: MEDIA_BUCKET, Key: folderKey, Body: Buffer.alloc(0) }));
     console.log(`Created s3://${MEDIA_BUCKET}/${folderKey}`);
   }
 
