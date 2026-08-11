@@ -1,0 +1,768 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { keyDates, prizePool, externalLinks } from '../../../data/site';
+
+const sections = [
+  { id: 'introduction', label: 'Introduction' },
+  { id: 'lfgs-links', label: 'LFGS Links' },
+  { id: 'schedule', label: 'Schedule' },
+  { id: 'prize-pool', label: 'Prize Pool' },
+  { id: 'team-registration', label: 'Team Registration' },
+  { id: 'player-registration', label: 'Player Registration' },
+  { id: 'additional-players', label: 'Additional Players' },
+  { id: 'ringer', label: 'Ringer' },
+  { id: 'regular-season', label: 'Regular Season' },
+  { id: 'hero-bans', label: 'Hero Bans' },
+  { id: 'playoffs', label: 'Playoffs' },
+  { id: 'lobby-code', label: 'Lobby Code' },
+  { id: 'map-pool', label: 'Map Pool' },
+  { id: 'match-schedule', label: 'Match Schedule' },
+  { id: 'match-results', label: 'Match Results' },
+  { id: 'voice-channel', label: 'Voice Channel (VC)' },
+  { id: 'tiebreaker', label: 'Tiebreaker' },
+  { id: 'tardiness', label: 'Tardiness' },
+  { id: 'pauses', label: 'Pauses (P)' },
+  { id: 'breaks', label: 'Breaks' },
+  { id: 'disconnection', label: 'Disconnection (DC)' },
+  { id: 'etiquette', label: 'Etiquette' },
+  { id: 'streaming', label: 'Streaming' },
+  { id: 'casting', label: 'Casting' },
+  { id: 'concluding-words', label: 'Concluding Words' },
+];
+
+const registrationOptions = [
+  { level: 200, timePlayed: 200, competitive: 200 },
+  { level: 300, timePlayed: 250, competitive: 150 },
+  { level: 400, timePlayed: 350, competitive: 125 },
+];
+
+const reportableOffenses = [
+  'T-bagging',
+  'Smurfing',
+  'Abusive chat',
+  'Cheating',
+  'Falsifying player information',
+  'Slandering the opposing team',
+  'Disrespecting LFGS staff',
+  'Disobeying LFGS tournament rules',
+  'Disobeying LFGS community guidelines',
+];
+
+const permissibleBanter = [
+  'Emoting',
+  'Staggering',
+  'Spraying',
+  'Counter swapping',
+  'Spawn camping',
+  'Spamming voicelines',
+  'Uncommon/unusual strategies',
+];
+
+const tiebreakerOrder = [
+  'Match wins from the tournament',
+  'Map wins from the matches',
+  'Head-to-head record (match wins between both teams)',
+  'Median Buchholz system (based on strength of schedule)',
+  'Best-of-3 match for tiebreaker',
+];
+---
+
+<Layout title="Full Rulebook">
+  <div class="content-width mx-auto px-8 pb-20 pt-10">
+    <a href="/tournament/rulebook" class="mb-5 inline-flex items-center gap-1.5 text-[13.5px] text-muted">
+      ← Back to Rulebook
+    </a>
+
+    <div class="mb-8">
+      <div class="font-display text-sm font-semibold uppercase tracking-[3px] text-gold">Season 8</div>
+      <h1 class="font-display text-[38px] font-bold text-ink">Full Rulebook</h1>
+    </div>
+
+    <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-[220px_1fr]">
+      <nav class="rulebook-toc flex flex-col gap-1">
+        {sections.map((s) => (
+          <a href={`#${s.id}`} class="rounded-md px-2.5 py-1.5 text-[13px] text-muted-softer hover:bg-bg-raised hover:text-ink">
+            {s.label}
+          </a>
+        ))}
+      </nav>
+
+      <div class="flex flex-col gap-10 rounded-2xl border border-gold/16 bg-bg-raised p-8">
+        <section id="introduction">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Introduction</h2>
+          <p class="text-sm leading-relaxed text-muted-softer">
+            Looking For Gold Scrims (LFGS) welcomes you all to the Season 8 Fall 2026 Tournament! This season will
+            support both Platinum and Diamond brackets. LFGS staff will provide live match castings, prize pools for
+            1st, 2nd, and 3rd place teams, and YouTube recordings of all casted matches. LFGS hopes to see returning
+            and new teams alike. Thank you for signing up; this is going to be another amazing season, best of luck
+            everyone! "Are You With Us" —Winston
+          </p>
+        </section>
+
+        <section id="lfgs-links">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">LFGS Links</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            All live castings of matches will be streamed through the LFGS Twitch account and then exported to the
+            LFGS YouTube channel. Please like, follow, comment, and subscribe:
+          </p>
+          <div class="flex flex-col gap-1.5">
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Website: <a href="https://lfgs.gg" class="text-gold">lfgs.gg</a></div>
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Discord: <a href={externalLinks.discord} target="_blank" rel="noopener noreferrer" class="text-gold">discord.gg/lfgs</a></div>
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Twitch: <a href={externalLinks.twitch} target="_blank" rel="noopener noreferrer" class="text-gold">twitch.tv/lookingforgoldscrims</a></div>
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> YouTube: <a href={externalLinks.youtube} target="_blank" rel="noopener noreferrer" class="text-gold">youtube.com/@lfgs7475</a></div>
+          </div>
+        </section>
+
+        <section id="schedule">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Schedule</h2>
+          <div class="flex flex-col gap-2">
+            {keyDates.map((d) => (
+              <div class="flex flex-wrap items-baseline justify-between gap-2 border-b border-gold/10 pb-2 text-sm">
+                <span class="text-muted-softer">{d.label}</span>
+                <span class="font-semibold text-ink">{d.date}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="prize-pool">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Prize Pool</h2>
+          <div class="flex flex-col gap-2">
+            {prizePool.map((p) => (
+              <div class="flex flex-wrap items-baseline justify-between gap-2 text-sm">
+                <span class="text-muted-softer">{p.place}{p.note ? ` (${p.note})` : ''}</span>
+                <span class="font-semibold text-ink">{p.amount}</span>
+              </div>
+            ))}
+          </div>
+          <p class="mt-3 text-sm leading-relaxed text-muted-softer">
+            Any teams who forfeit during the playoffs will not receive the prize pool earnings.
+          </p>
+        </section>
+
+        <section id="team-registration">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Team Registration</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            LFGS Season 8 Fall 2026 Tournament is catered to the PC platform, Americas region EST, and using USA
+            Central servers, but all regions and platforms are welcome to sign up.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Teams are capped at 8 players; staff and coaches are excluded from the player cap. Additional players can
+            be added at any time prior to semi-finals.
+          </p>
+          <h3 class="mb-2 font-display text-base font-bold text-ink">Team Requirements at Registration</h3>
+          <div class="mb-4 flex flex-col gap-1.5">
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Platform: PC</div>
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Region: Americas EST</div>
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Lobby servers: USA Central</div>
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Player cap: 8 players per team</div>
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Platinum Bracket: Platinum 3 ST team average</div>
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Diamond Bracket: Diamond 3 ST team average</div>
+          </div>
+
+          <h3 class="mb-2 font-display text-base font-bold text-ink">Calculating Team Skill Tier Average</h3>
+
+          <h4 class="mb-1.5 font-display text-sm font-bold text-gold">Platinum Bracket</h4>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            At the time of registration, a team's skill tier (ST) average is capped at Platinum 3. Calculations are
+            based on the top 5 players on the team.
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            Players are ST capped at Platinum 1 peak. This is based on the competitive 5v5 role queue from Overwatch
+            (OW) 2026 Season 1, 2, and 3 (current season).
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            Role(s) above Platinum 1 ST peak at registration are not eligible to be played. However, players may
+            off-role up to 3 divisions below their ST peak.
+          </p>
+          <p class="mb-2 text-[13.5px] italic leading-relaxed text-muted">
+            Example: A Diamond 3 ST peak player can off-role to a Platinum 1 ST peak role.
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            If a player has a higher ST peak on a role other than the role(s) they are registered for and both ST
+            peaks fall within the bracket's allowed ST peak, then the registered role(s) will be calculated 3
+            divisions below their highest ST peak.
+          </p>
+          <p class="mb-2 text-[13.5px] italic leading-relaxed text-muted">
+            Example: The player's registered role is Platinum 5 ST peak, their non-registered role is ST peak
+            Platinum 1, so their registered role will be adjusted to Platinum 4.
+          </p>
+          <p class="mb-4 text-sm leading-relaxed text-muted-softer">
+            Players below Gold 1 ST peak are default Gold 1 for the calculation of team ST average.
+          </p>
+
+          <h4 class="mb-1.5 font-display text-sm font-bold text-gold">Diamond Bracket</h4>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            At the time of registration, a team's skill tier (ST) average is capped at Diamond 3. Calculations are
+            based on the top 5 players on the team.
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            Players are ST capped at Diamond 1 peak. This is based on the competitive 5v5 role queue from Overwatch
+            (OW) 2026 Season 1, 2, and 3 (current season).
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            Role(s) above Diamond 1 ST peak at registration are not eligible to be played. However, players may
+            off-role up to 3 divisions below their ST peak.
+          </p>
+          <p class="mb-2 text-[13.5px] italic leading-relaxed text-muted">
+            Example: A Master 3 ST peak player can off-role to a Diamond 1 ST peak role.
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            If a player has a higher ST peak on a role other than the role(s) they are registered for and both ST
+            peaks fall within the bracket's allowed ST peak, then the registered role(s) will be calculated 3
+            divisions below their highest ST peak.
+          </p>
+          <p class="mb-2 text-[13.5px] italic leading-relaxed text-muted">
+            Example: The player's registered role is Diamond 5 ST peak, their non-registered role is ST peak Diamond
+            1, so their registered role will be adjusted to Platinum 4.
+          </p>
+          <p class="text-sm leading-relaxed text-muted-softer">
+            Players below Platinum 1 ST peak are default Platinum 1 for the calculation of team ST average.
+          </p>
+        </section>
+
+        <section id="player-registration">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Player Registration</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Players must have a total of 35 games won between 2026 seasons 2, 3, and 4 (current season) with 10 of
+            those wins done in the current competitive role queue season.
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            Players must also meet at least one of these requirement options:
+          </p>
+          <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {registrationOptions.map((o, i) => (
+              <div class="rounded-lg border border-gold/12 bg-bg p-4">
+                <div class="mb-2 font-display text-sm font-bold text-gold">Option {i + 1}</div>
+                <div class="text-[13px] text-muted-softer">Account Level: {o.level}</div>
+                <div class="text-[13px] text-muted-softer">Time Played: {o.timePlayed} hrs</div>
+                <div class="text-[13px] text-muted-softer">Competitive: {o.competitive} hrs</div>
+              </div>
+            ))}
+          </div>
+
+          <h4 class="mb-1.5 font-display text-sm font-bold text-gold">Platinum Bracket</h4>
+          <div class="mb-4 flex flex-col gap-1.5">
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Registered role(s): Platinum 1 ST peak and below</div>
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Off-role(s): Diamond 3 ST peak maximum</div>
+          </div>
+
+          <h4 class="mb-1.5 font-display text-sm font-bold text-gold">Diamond Bracket</h4>
+          <div class="mb-4 flex flex-col gap-1.5">
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Registered role(s): Diamond 1 ST peak and below</div>
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Off-role(s): Master 3 ST peak maximum</div>
+          </div>
+
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Players are role locked to the role(s) they are registered for at the time of registration. Additional
+            role(s) can be added later. They must meet the same requirements as registered role(s) and must be
+            approved by MightyOwl. Players can NOT play for multiple teams.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Team Captains are responsible for notifying MightyOwl via Discord of any team changes prior to the start
+            of a match. Failure to do so will result in the forfeit of that match.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Player's profile screenshots of 2026 Season 2, 3, &amp; 4 (current season) will be required and must be
+            legible. Screenshots must include the player's Battle.net name, player level, time played, comp hours,
+            and games won. Upon approval, players can freely climb on all roles.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            MightyOwl will inform the Team Captain for any resubmits, along with any other missing information. LFGS
+            staff will request more from any player(s) under investigation. Any deliberate obfuscation by a player
+            will result in penalties for the team.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Players can only play on the Battle.net account they are registered for. No streamer mode. No account
+            sharing. No account swapping. No alternative accounts.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Players must disclose any account(s) higher than their main OW account. Team Captains are responsible
+            for sending profile screenshots of those account(s) directly to MightyOwl. Failure to do so will result
+            in the player getting kicked from the tournament.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            All registered players must have their profiles set to public during the match, regardless of whether
+            they are actively playing or spectating. Team Captains are responsible for verifying if players' profiles
+            are public during the match. Players who are found to have their profile set to private during the match
+            will result in that team forfeiting that map. Any non-registered players like staff and coaches may leave
+            their profile private.
+          </p>
+          <p class="text-sm leading-relaxed text-muted-softer">
+            All registered players must join the LFGS Discord server (<a href={externalLinks.discord} target="_blank" rel="noopener noreferrer" class="text-gold">discord.gg/lfgs</a>) prior to the
+            start of the tournament season. Team Captains are responsible for ensuring all their players are
+            accounted for before the start of the match.
+          </p>
+        </section>
+
+        <section id="additional-players">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Additional Players</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Teams can add additional player(s) at any time prior to the start of semi-finals. At the start of
+            semi-finals, teams are roster locked, no more additional players can be added.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            The player cap is 8 players per team. The Team Captain is responsible for directly messaging MightyOwl
+            about the additional player(s) for their team. The message must include the required OW screenshots,
+            Discord tag, and Battle.net tag of additional player(s). Once approved, the additional player(s) are
+            allowed to compete in the tournament.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            All additional player(s) are held to the same Player Registration requirements.
+          </p>
+          <p class="text-sm leading-relaxed text-muted-softer">
+            Teams are allowed to drop any players at any time. Team Captains are responsible for notifying MightyOwl
+            of any roster and role changes to their team.
+          </p>
+        </section>
+
+        <section id="ringer">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Ringer</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Teams are allowed 1 ringer for the match. Ringers are held to the same Player Registration requirements.
+            Platinum Bracket: ringers are capped at Platinum 3 ST peak for all roles. Diamond Bracket: ringers are
+            capped at Diamond 3 ST peak for all roles. Players below the bracket's ringer ST peak cap must have their
+            ringer be the same or lower ST peak of that player.
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            Ringers must have a total of 35 games won between 2026 seasons 2, 3, and 4 (current season) with 10 of
+            those wins done in the current competitive role queue season, and must also meet at least one of the
+            same requirement options listed under Player Registration.
+          </p>
+
+          <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <h4 class="mb-1.5 font-display text-sm font-bold text-gold">Platinum Bracket</h4>
+              <div class="flex flex-col gap-1.5">
+                <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> 1 ringer per team</div>
+                <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Capped at Platinum 3 ST peak</div>
+                <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Players below the cap must have their ringer the same or lower ST peak</div>
+              </div>
+            </div>
+            <div>
+              <h4 class="mb-1.5 font-display text-sm font-bold text-gold">Diamond Bracket</h4>
+              <div class="flex flex-col gap-1.5">
+                <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> 1 ringer per team</div>
+                <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Capped at Diamond 3 ST peak</div>
+                <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> Players below the cap must have their ringer the same or lower ST peak</div>
+              </div>
+            </div>
+          </div>
+
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Team Captains are responsible for acquiring their ringer and must notify the other Team Captain and LFGS
+            staff 15 minutes prior to the start of the match in the #s8-ringer channel. Once approved, LFGS staff
+            will assign the ringer the "tournament ringer" role.
+          </p>
+          <p class="mb-3 text-[13.5px] italic leading-relaxed text-muted">
+            Example — Team A: Support Ringer for Player A @ Team B Team Captain &amp; @ staff<br />
+            Ringer Discord tag: ...<br />
+            Ringer Battle.net tag: ...<br />
+            Ringer Profile Screenshots: S2, 3, &amp; 4 (current seasons)
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Failure to notify the other Team Captain and LFGS staff of the ringer in the allotted time frame will
+            result in forfeiting the map(s) that the ringer played in.
+          </p>
+          <p class="text-sm leading-relaxed text-muted-softer">
+            Ringers are in place to only fill a role that the team cannot fill at the time of their scheduled match.
+            All available registered players on their registered role(s) must be fielded first prior to securing a
+            ringer. Fielding a ringer when registered players are available to fill the spot will result in
+            forfeiting the map(s) that the ringer played in.
+          </p>
+        </section>
+
+        <section id="regular-season">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Regular Season</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            The regular season will be a Swiss 5v5 style tournament; the duration of the regular season will be
+            determined by the number of teams who register.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Each team will play 1 official match per week with skins, hero perks, and hero bans enabled. Matches are
+            first to 3. If a team forfeits, the match win goes to the other team.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            For week 1, teams will be randomly selected to choose the first map while the other team will choose the
+            1st hero ban. The home team (listed first) gets the first map pick and the away team (listed second)
+            gets the first hero ban.
+          </p>
+          <p class="mb-3 text-[13.5px] italic leading-relaxed text-muted">
+            Example: Team A (first map pick) vs Team B (first hero ban)
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            For subsequent maps, the losing team will decide if they want map or hero ban first. The winning team
+            will then decide either their map choice or hero ban accordingly and whether they want attack or defense
+            (if applicable).
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Maps cannot be played twice in a single match from the Map Pool. Game modes may only be repeated once
+            all game modes have been played in the match from the Map Pool.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Teams have an allotted 90 seconds to make their selection for map pick and hero ban. If a team fails to
+            make their selection in the allotted time, that team forfeits said map and hero ban. Team Captains are
+            responsible for keeping track of how much time has elapsed.
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            The selection order goes: 1st: Map pick | 2nd: Hero ban | 3rd: Roster lock.
+          </p>
+          <p class="mb-3 text-[13.5px] italic leading-relaxed text-muted">
+            Example: Team A picks map → Team B picks hero ban → Team A picks hero ban → Team A roster locks → Team B
+            roster locks
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Once the lobby host confirms both teams are ready, they will start the map. The lobby host will bring
+            everyone back into the lobby once the map has concluded.
+          </p>
+          <p class="text-sm leading-relaxed text-muted-softer">
+            New heroes released in the current OW competitive 5v5 role queue season may be played immediately in the
+            tournament.
+          </p>
+        </section>
+
+        <section id="hero-bans">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Hero Bans</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Hero bans will occur prior to the start of the map; teams have 90 seconds to make their selection. Hero
+            bans will happen after map selection as noted in Regular Season. Teams will ban 1 hero per map. The hero
+            bans apply to both teams, in total 2 hero bans for said map.
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            The 1st ban determines the restricted role. A role cannot be banned twice in a map.
+          </p>
+          <p class="mb-3 text-[13.5px] italic leading-relaxed text-muted">
+            Example: Team A bans a Tank hero, then Team B can only ban a DPS or Support hero.
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            A hero can be banned twice in a match, once by each team. Once a team bans a hero, that hero cannot be
+            repeatedly banned by the same team in a single match.
+          </p>
+          <p class="text-[13.5px] italic leading-relaxed text-muted">
+            Example: Team A bans Lucio in map 1 — Team A can no longer ban Lucio for the rest of that match. Team B
+            bans Lucio in map 2 — Team B can no longer ban Lucio for the rest of that match.
+          </p>
+        </section>
+
+        <section id="playoffs">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Playoffs</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            The playoffs will be a split double-elimination format, with the normal week 1 double-eliminations
+            bracket skipped. Teams seeded 1st through 8th from the regular season will advance to the playoffs.
+            Grand finals will be first to 4; all other matches are first to 3.
+          </p>
+          <p class="mb-4 text-sm leading-relaxed text-muted-softer">
+            Teams seeded 1st through 4th from the regular season will start in the upper bracket. Teams seeded 5th
+            through 8th from the regular season will start in the lower bracket.
+          </p>
+          <img
+            src="/images/rulebook/playoffs-bracket.png"
+            alt="Playoffs double-elimination bracket structure"
+            class="mb-4 w-full rounded-lg border border-gold/12"
+          />
+          <p class="text-sm leading-relaxed text-muted-softer">
+            Format for playoffs is subject to change depending on how many teams register.
+          </p>
+        </section>
+
+        <section id="lobby-code">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Lobby Code</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Regular season code: <span class="font-semibold text-ink">QXF6D</span> · Playoffs season: TBA
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Either team can host the match lobby. Spectators will only have the specs for the team they are
+            spectating for during the match. Only LFGS Casters and productions will have all specs during the match.
+          </p>
+          <p class="mb-4 text-sm leading-relaxed text-muted-softer">
+            The data center preference should be on the strongest signal. If there is any disagreement about which
+            server to use, the default will be USA - Central.
+          </p>
+          <img
+            src="/images/rulebook/lobby-settings-example.png"
+            alt="Example custom game lobby settings"
+            class="w-full max-w-sm rounded-lg border border-gold/12"
+          />
+        </section>
+
+        <section id="map-pool">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Map Pool</h2>
+          <h4 class="mb-2 font-display text-sm font-bold text-gold">Regular Season</h4>
+          <img
+            src="/images/rulebook/map-pool.png"
+            alt="Season 8 regular season map pool"
+            class="mb-4 w-full rounded-lg border border-gold/12"
+          />
+          <h4 class="mb-1.5 font-display text-sm font-bold text-gold">Playoffs Season</h4>
+          <p class="text-sm leading-relaxed text-muted-softer">TBA</p>
+        </section>
+
+        <section id="match-schedule">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Match Schedule</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            In good faith, Team Captains are to work with one another to schedule their matches. If both teams
+            cannot agree upon a date and time, then the match will automatically be on the default match day and
+            time of Sunday at 8:00 PM EST.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Teams have 1 week, from Monday to Sunday, to complete their match. Failure to play the week's match by
+            Sunday at 11:00 PM EST will result in both teams forfeiting that week's match.
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            Once a match is scheduled, it must be posted in the #s8-scheduling channel.
+          </p>
+          <p class="mb-3 text-[13.5px] italic leading-relaxed text-muted">
+            Example: Team A vs Team B — Thursday, August 20th at 9 PM EST
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            LFGS staff will consider extensions on a case-by-case basis. Team Captains are responsible for notifying
+            MightyOwl of any scheduling issues (e.g. Blizzard servers themselves are crashing).
+          </p>
+          <p class="text-sm font-semibold leading-relaxed text-ink">
+            Show up to your matches. A no-show from either team will result in the forfeit of the match. The present
+            team will earn the win. If neither team shows up, then both teams forfeit.
+          </p>
+        </section>
+
+        <section id="match-results">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Match Results</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Match results MUST BE posted in the #s8-results channel as soon as possible after the match has
+            concluded. The Team Captain of the winning team will post the match results.
+          </p>
+          <p class="mb-3 text-[13.5px] italic leading-relaxed text-muted">
+            Example: Team A 3-1 Team B<br />
+            [Map] | [Hero Bans] | [Map Code]<br />
+            Ilios | Kiri, Sigma | 1QK2YN
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            If match results are not posted by the end of the week on Sunday at 11:59 PM EST, then both teams will
+            receive a forfeit for that week's match.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Team Captains are responsible for reaching out to MightyOwl regarding any discrepancies in match results
+            as soon as possible.
+          </p>
+          <p class="text-sm leading-relaxed text-muted-softer">
+            Once all matches are posted for the week, the following morning, MightyOwl will post the next matchups,
+            team standings, YouTube VOD link for casted matches, and tournament stat information on maps played,
+            hero bans, etc.
+          </p>
+        </section>
+
+        <section id="voice-channel">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Voice Channel (VC)</h2>
+          <p class="mb-4 text-sm leading-relaxed text-muted-softer">
+            There will be a VC for the 5 players playing in the match called Players, and a VC for non-match players
+            like coaches, managers, ringers, etc. called Spectators.
+          </p>
+          <img
+            src="/images/rulebook/vc-players-spectators.png"
+            alt="Players and Spectators voice channel example"
+            class="mb-4 w-full max-w-xs rounded-lg border border-gold/12"
+          />
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Coaching is only allowed between maps and before spawn doors open at the start of the map. No
+            mid-round coaching allowed. Failure to comply with the VC structures will result in the team(s)
+            forfeiting said map(s).
+          </p>
+          <p class="text-sm leading-relaxed text-muted-softer">
+            The 5 players playing said map(s) are only allowed to be in the Spectators VC for coaching, bio breaks,
+            pauses, and team interviews. Once the spawn doors open at the start of the map, the players must be in
+            their respective Players VCs and no further coaching until said map is over.
+          </p>
+        </section>
+
+        <section id="tiebreaker">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Tiebreaker</h2>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            In the case of a tiebreaker, LFGS staff will determine higher seed by:
+          </p>
+          <div class="flex flex-col gap-1.5">
+            {tiebreakerOrder.map((t, i) => (
+              <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">{i + 1}.</span> {t}</div>
+            ))}
+          </div>
+        </section>
+
+        <section id="tardiness">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Tardiness</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Teams are expected to show up on time to their agreed-upon Match Schedule posted in #s8-scheduling. Team
+            Captains are responsible for keeping track of how much time has elapsed.
+          </p>
+          <div class="flex flex-col gap-1.5">
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> If a team is 10 minutes late, they forfeit the 1st map.</div>
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> If a team is 20 minutes late, they forfeit the 2nd map.</div>
+            <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> If a team is 30 minutes late, they forfeit the entire match.</div>
+          </div>
+        </section>
+
+        <section id="pauses">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Pauses (P)</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Teams have an allotted 5 pauses per match, with each pause being a maximum of 3 minutes. If a team needs
+            more time, then another pause will be utilized.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            If all 5 pauses are used, the Team Captain can request the opposing team to give their pauses to them.
+            If all pauses are exhausted, the match will continue as is with no more pauses.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Team Captains are responsible for keeping track of how much time has elapsed and how many pauses have
+            been utilized for said match.
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">Pauses should only be used in an emergency scenario.</p>
+          <p class="text-[13.5px] italic leading-relaxed text-muted">
+            Example: Mic not working, mouse died, phone call, unexpected matters, DC, etc.
+          </p>
+        </section>
+
+        <section id="breaks">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Breaks</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            After map 2, any team can declare a 5 minute bio break. This bio break will not count against the
+            allotted 5 pauses for a match. During the bio break, players are allowed to move back to the Spectators
+            VC. All team members must return to their respective Voice Channel (VC) once the bio break has
+            concluded.
+          </p>
+          <p class="text-sm leading-relaxed text-muted-softer">
+            Bio breaks going past 5 minutes will incur the use of Pauses. Team Captains are responsible for keeping
+            track of how much time has elapsed.
+          </p>
+        </section>
+
+        <section id="disconnection">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Disconnection (DC)</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            If there is a DC in the middle of a match, the match will be immediately paused and teams can either
+            decide to wait for their player to reconnect to the match utilizing Pauses, or forfeit said map to gain
+            10 minutes to secure a Ringer.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Any succeeding DCs where the player cannot reconnect will result in either finishing up said map down
+            that player or forfeiting said map. If the team has no remaining Pauses, then they must continue the
+            match down that player(s) or forfeit said map.
+          </p>
+          <p class="mb-2 text-sm leading-relaxed text-muted-softer">
+            Once a map starts, players are role locked for the duration of said map. They cannot swap their role
+            mid-round to fill for the player who DC'd.
+          </p>
+          <p class="text-[13.5px] italic leading-relaxed text-muted">
+            Example: Team A's support player DCs — the team either waits for the player to reconnect or chooses to
+            secure a qualified support player in their bracket.
+          </p>
+        </section>
+
+        <section id="etiquette">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Etiquette</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            LFGS staff expects good faith sportsmanship behavior from all LFGS community members both during the
+            tournament and outside the tournament scene. Slurs, cyberbullying, profanity, etc. directed at anyone,
+            at any team, or at any LFGS staff will not be tolerated.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Please report any suspected inappropriate behavior to the LFGS staff. Please direct questions to the
+            #s8-ask-staff channel or reach out to MightyOwl. Each issue will be handled on a case-by-case basis.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Team Captains must attempt in good faith to resolve the issues at hand privately in Discord direct
+            messages with the other team's Captain before directly reaching out to the LFGS staff.
+          </p>
+          <p class="mb-4 text-sm leading-relaxed text-muted-softer">
+            LFGS staff reserves the right to issue any formal warnings, temporary player bans, revoke match wins,
+            disqualify a team, etc. from the tournament.
+          </p>
+
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <h4 class="mb-2 font-display text-sm font-bold text-ink">Reportable offenses (not limited to)</h4>
+              <div class="flex flex-col gap-1.5">
+                {reportableOffenses.map((o) => (
+                  <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> {o}</div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h4 class="mb-2 font-display text-sm font-bold text-ink">Permissible bantering (no penalties)</h4>
+              <div class="flex flex-col gap-1.5">
+                {permissibleBanter.map((o) => (
+                  <div class="flex gap-2.5 text-sm text-muted-softer"><span class="text-gold">—</span> {o}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="streaming">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Streaming</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Players are allowed to stream and/or record their own matches. Team Captains are required to notify the
+            other Team Captain of the stream/recording with said stream/recording link.
+          </p>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            If the match is live streamed, the stream must be moderated and there must be a minimum 2 minute delay.
+            No overview of the match, no all specs, and no casting allowed. The stream/recording must be from the
+            point of view of the player who is streaming/recording.
+          </p>
+          <p class="text-sm leading-relaxed text-muted-softer">
+            Failure to meet these criteria will result in the player(s) no longer being allowed to host private
+            streams/recordings of the matches. Streaming/recording matches after the privilege is revoked will
+            result in the player(s) being disqualified from the rest of the tournament.
+          </p>
+        </section>
+
+        <section id="casting">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Casting</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            All casting of the LFGS Season 8 Fall 2026 Tournament will take place solely on the LFGS Twitch channel
+            in conjunction with LFGS moderators.
+          </p>
+          <p class="mb-4 text-sm leading-relaxed text-muted-softer">
+            Anyone in the LFGS community is welcome to cast. Please message MightyOwl to learn more. LFGS will make
+            concerted efforts to showcase as many tournament matches as possible.
+          </p>
+          <img
+            src="/images/rulebook/casting-stream-delay.png"
+            alt="Cast matches are on a 120 second delay"
+            class="mb-4 w-full max-w-md rounded-lg border border-gold/12"
+          />
+          <p class="text-sm leading-relaxed text-muted-softer">
+            Teams that get casted will be on a 90 second timer when making map and hero ban selections. If teams
+            need more time for the selection process, then they can utilize their Pauses.
+          </p>
+        </section>
+
+        <section id="concluding-words">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Concluding Words</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Overwatch is a game at the end of the day. The goal here is to have fun while in a more structured
+            competitive scene. LFGS is here to highlight and celebrate the lower ranks. Best of luck to everyone and
+            may this be a memorable experience for all! From the LFGS staff, we appreciate every single one of you
+            from players to coaches to staff to the LFGS community!!!
+          </p>
+          <p class="text-sm font-semibold text-ink">
+            "We are Overwatch" —Winston
+          </p>
+          <p class="mt-1 text-[13px] text-muted">Created by MightyOwl, PSI, &amp; Keegs</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* Sticky rather than fixed: its starting position is wherever it
+       naturally sits in normal document flow (right after the title block
+       above it) — the browser handles that for free, no measurement of the
+       title block's height needed. top only has to clear the site's own
+       fixed 72px header, a real, unchanging constant. */
+    @media (min-width: 1024px) {
+      .rulebook-toc {
+        position: sticky;
+        top: 88px;
+        max-height: calc(100vh - 128px);
+        overflow-y: auto;
+      }
+    }
+  </style>
+</Layout>

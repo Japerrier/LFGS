@@ -41,6 +41,10 @@
 @layer base {
   html {
     background: var(--color-bg);
+    /* Header.astro is fixed at h-[72px] and sits above everything (z-100),
+       so any in-page anchor scroll (e.g. #section links) needs this much
+       clearance or the target lands hidden behind it. */
+    scroll-padding-top: 88px;
   }
 
   body {

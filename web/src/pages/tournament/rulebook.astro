@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import TournamentNav from '../../components/TournamentNav.astro';
-import { rulebookHighlights, prizePool, externalLinks } from '../../data/site';
+import { rulebookHighlights, prizePool } from '../../data/site';
 ---
 
 <Layout title="Rulebook">
@@ -23,9 +23,7 @@ import { rulebookHighlights, prizePool, externalLinks } from '../../data/site';
           ))}
         </div>
         <a
-          href={externalLinks.rulebookDoc}
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/tournament/rulebook/full"
           class="inline-block rounded-lg bg-linear-to-br from-gold-grad-from to-gold-grad-to px-6 py-3 font-display text-[15px] font-bold text-gold-ink"
         >
           View Full Rulebook →

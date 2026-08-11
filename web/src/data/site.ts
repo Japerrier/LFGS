@@ -6,8 +6,6 @@ export const externalLinks = {
   discord: 'https://discord.gg/lfgs',
   twitch: 'https://www.twitch.tv/lookingforgoldscrims',
   youtube: 'https://www.youtube.com/@lfgs7475',
-  // Live doc, actively maintained by staff — linked directly rather than a point-in-time PDF export.
-  rulebookDoc: 'https://docs.google.com/document/d/1Hk7Z-Rxsv9S4tcoUfVrQ5aLEu7i39_94VyBU54FtJL8/edit?usp=sharing',
   registrationForm: 'https://docs.google.com/forms/d/e/1FAIpQLScAPfNzgUQ0QMBST8urLgMzuBUj6eFAjFXlYRg0_9FrShSGMA/viewform',
 };
 
