@@ -8,9 +8,11 @@ export interface Team {
   name: string;
   bracket: Bracket;
   logoKey?: string;
+  /** Only `true` shows the team on the site — missing/false/null all hide it. */
+  approved?: boolean;
 }
 
-export type MemberType = 'Player' | 'Head Coach' | 'Assistant Coach';
+export type MemberType = 'Player' | 'Head Coach' | 'Assistant Coach' | 'Manager';
 
 export interface TeamMember {
   memberId: string;
@@ -18,6 +20,9 @@ export interface TeamMember {
   season: number;
   name: string;
   memberType: MemberType;
+  /** Only checked for memberType "Player" — only `true` shows a player.
+   *  Coaches/managers are exempt from this check and can leave it unset. */
+  approved?: boolean;
   captain?: boolean;
   registeredForTank?: boolean;
   registeredForDps?: boolean;

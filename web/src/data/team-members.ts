@@ -8,7 +8,13 @@ const TEAM_MEMBERS_TABLE = 'Team_Members';
 // not just left out of the template — this is public-facing, and those fields
 // would let someone outside the team's own players track a member down elsewhere.
 const PUBLIC_MEMBER_FIELDS =
-  'memberId, teamId, #season, #name, memberType, captain, registeredForTank, registeredForDps, registeredForSupport, profileImageKey, smallProfileImageKey, seasonScreenshotImageKeys';
+  'memberId, teamId, #season, #name, memberType, approved, captain, registeredForTank, registeredForDps, registeredForSupport, profileImageKey, smallProfileImageKey, seasonScreenshotImageKeys';
+
+// Only memberType "Player" is gated on approved === true — coaches/managers
+// are exempt and show whenever their team does, whether or not the field is set.
+function isApprovedForDisplay(member: TeamMember): boolean {
+  return member.memberType !== 'Player' || member.approved === true;
+}
 
 export async function getMembersByTeamId(teamId: string): Promise<TeamMember[]> {
   const { Items } = await dynamoDb.send(
@@ -20,7 +26,7 @@ export async function getMembersByTeamId(teamId: string): Promise<TeamMember[]> 
       ExpressionAttributeNames: { '#name': 'name', '#season': 'season' },
     })
   );
-  return (Items ?? []) as TeamMember[];
+  return ((Items ?? []) as TeamMember[]).filter(isApprovedForDisplay);
 }
 
 export function memberRoles(member: TeamMember): string[] {

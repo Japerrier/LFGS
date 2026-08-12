@@ -20,14 +20,18 @@ const { Items } = await dynamoDb.send(
   })
 );
 
-const rawTeams = (Items ?? []).map((item) => ({
-  teamId: item.teamId as string,
-  baseSlug: slugify(item.name),
-  season: item.season,
-  name: item.name as string,
-  bracket: normalizeBracket(item.bracket),
-  logoKey: item.logoKey,
-}));
+// Only approved === true shows a team — missing/false/null all hide it, so
+// unreviewed signup-form submissions never render.
+const rawTeams = (Items ?? [])
+  .filter((item) => item.approved === true)
+  .map((item) => ({
+    teamId: item.teamId as string,
+    baseSlug: slugify(item.name),
+    season: item.season,
+    name: item.name as string,
+    bracket: normalizeBracket(item.bracket),
+    logoKey: item.logoKey,
+  }));
 
 // Names aren't required to be unique, so slugs derived from them aren't
 // either. Keep URLs clean (just the name) in the normal case; only when two
@@ -57,11 +61,13 @@ export async function getTeamsBySeason(season: number): Promise<Pick<Team, 'team
       TableName: TEAMS_TABLE,
       KeyConditionExpression: 'season = :season',
       ExpressionAttributeValues: { ':season': season },
-      ProjectionExpression: 'teamId, #n, logoKey',
+      ProjectionExpression: 'teamId, #n, logoKey, approved',
       ExpressionAttributeNames: { '#n': 'name' },
     })
   );
-  return (Items ?? []) as Pick<Team, 'teamId' | 'name' | 'logoKey'>[];
+  return ((Items ?? []) as (Pick<Team, 'teamId' | 'name' | 'logoKey'> & { approved?: boolean })[])
+    .filter((item) => item.approved === true)
+    .map(({ approved: _approved, ...item }) => item);
 }
 
 export function getTeamsByBracket(bracket: Bracket): Team[] {
