@@ -1,11 +1,11 @@
+import { MAX_SCREENSHOTS_PER_PLAYER } from '../lib/registration-validation';
+
 export interface PlayerFormState {
   discordTag: string;
   battleTag: string;
   roles: { tank: boolean; damage: boolean; support: boolean };
   screenshots: (File | null)[];
 }
-
-export const MAX_SCREENSHOTS_PER_PLAYER = 3;
 
 export function emptyPlayer(): PlayerFormState {
   return {

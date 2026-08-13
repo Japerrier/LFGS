@@ -2,14 +2,9 @@ import { useState } from 'react';
 import { BRACKETS } from '../lib/brackets';
 import type { Bracket } from '../data/types';
 import PlayerBlock, { emptyPlayer, type PlayerFormState } from './PlayerBlock';
+import { MIN_PLAYERS, MAX_PLAYERS, validateTeamInfo, validatePlayers, type TeamInfoInput } from '../lib/registration-validation';
 
-interface TeamInfo {
-  teamName: string;
-  bracket: Bracket | '';
-  headCoachName: string;
-  captainDiscordTag: string;
-  logo: File | null;
-}
+type TeamInfo = TeamInfoInput;
 
 const EMPTY_TEAM_INFO: TeamInfo = {
   teamName: '',
@@ -19,12 +14,6 @@ const EMPTY_TEAM_INFO: TeamInfo = {
   logo: null,
 };
 
-// Mirrors MIN_PLAYERS/MAX_PLAYERS in infra/lambda/registration-handler/index.mjs —
-// duplicated rather than shared since the wizard and the Lambda are separate
-// deployables (same convention scripts/ already uses for its own small helpers).
-const MIN_PLAYERS = 5;
-const MAX_PLAYERS = 8;
-
 const inputClass =
   'w-full rounded-lg border border-gold/20 bg-bg px-3.5 py-2.5 text-sm text-ink placeholder:text-faint focus:border-gold/50 focus:outline-none';
 const labelClass = 'mb-1.5 block text-[13px] font-semibold text-muted-soft';
@@ -32,15 +21,46 @@ const buttonClass = 'rounded-lg bg-linear-to-br from-gold-grad-from to-gold-grad
 
 type Step = 'team' | 'players';
 
+function ErrorList({ errors }: { errors: string[] }) {
+  if (errors.length === 0) return null;
+  return (
+    <div className="mb-5 rounded-lg border border-red-500/30 bg-red-500/8 px-4 py-3 text-sm text-red-300">
+      <ul className="list-disc space-y-1 pl-4">
+        {errors.map((error) => (
+          <li key={error}>{error}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function RegisterWizard() {
   const [step, setStep] = useState<Step>('team');
   const [team, setTeam] = useState<TeamInfo>(EMPTY_TEAM_INFO);
   const [players, setPlayers] = useState<PlayerFormState[]>(
     Array.from({ length: MIN_PLAYERS }, emptyPlayer)
   );
+  const [errors, setErrors] = useState<string[]>([]);
 
   function updateField<K extends keyof TeamInfo>(key: K, value: TeamInfo[K]) {
     setTeam((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function goToPlayers() {
+    const teamErrors = validateTeamInfo(team);
+    setErrors(teamErrors);
+    if (teamErrors.length === 0) setStep('players');
+  }
+
+  function reviewAndSubmit() {
+    // Re-check team info too — a captain/discord-tag mismatch, for instance,
+    // can only be caught once both steps' data is in hand.
+    const allErrors = [...validateTeamInfo(team), ...validatePlayers(players, team.captainDiscordTag)];
+    setErrors(allErrors);
+    if (allErrors.length === 0) {
+      // Submission wiring lands in the next piece of this wizard.
+      console.log('Validated — ready to submit', { team, players });
+    }
   }
 
   function updatePlayer(index: number, player: PlayerFormState) {
@@ -62,6 +82,8 @@ export default function RegisterWizard() {
           <span>Step 1 of 3</span>
           <span className="text-muted">— Team Info</span>
         </div>
+
+        <ErrorList errors={errors} />
 
         <form className="flex flex-col gap-5" onSubmit={(e) => e.preventDefault()}>
           <div>
@@ -146,7 +168,7 @@ export default function RegisterWizard() {
             <p className="mt-1.5 text-xs text-muted">Must match the Discord Tag you enter for that player below.</p>
           </div>
 
-          <button type="button" className={`mt-2 ${buttonClass}`} onClick={() => setStep('players')}>
+          <button type="button" className={`mt-2 ${buttonClass}`} onClick={goToPlayers}>
             Continue to Players →
           </button>
         </form>
@@ -160,6 +182,8 @@ export default function RegisterWizard() {
         <span>Step 2 of 3</span>
         <span className="text-muted">— Players ({players.length}/{MAX_PLAYERS})</span>
       </div>
+
+      <ErrorList errors={errors} />
 
       <div className="flex flex-col gap-4">
         {players.map((player, index) => (
@@ -188,8 +212,9 @@ export default function RegisterWizard() {
         <button type="button" className="text-sm font-semibold text-muted-soft hover:text-ink" onClick={() => setStep('team')}>
           ← Back to Team Info
         </button>
-        {/* Validation + submission land in the next pieces of this wizard. */}
-        <button type="button" disabled className={`${buttonClass} opacity-40`}>
+        {/* Actual submission (POST + presigned uploads) lands in the next
+            piece of this wizard — this currently only validates. */}
+        <button type="button" className={buttonClass} onClick={reviewAndSubmit}>
           Review &amp; Submit →
         </button>
       </div>
