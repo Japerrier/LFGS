@@ -3,6 +3,7 @@ import { BRACKETS } from '../lib/brackets';
 import type { Bracket } from '../data/types';
 import PlayerBlock, { emptyPlayer, type PlayerFormState } from './PlayerBlock';
 import { MIN_PLAYERS, MAX_PLAYERS, validateTeamInfo, validatePlayers, type TeamInfoInput } from '../lib/registration-validation';
+import { submitRegistration } from '../lib/submit-registration';
 
 type TeamInfo = TeamInfoInput;
 
@@ -20,6 +21,7 @@ const labelClass = 'mb-1.5 block text-[13px] font-semibold text-muted-soft';
 const buttonClass = 'rounded-lg bg-linear-to-br from-gold-grad-from to-gold-grad-to px-6 py-3 font-display text-base font-bold text-gold-ink';
 
 type Step = 'team' | 'players';
+type SubmitState = 'idle' | 'submitting' | 'success' | 'error';
 
 function ErrorList({ errors }: { errors: string[] }) {
   if (errors.length === 0) return null;
@@ -41,6 +43,9 @@ export default function RegisterWizard() {
     Array.from({ length: MIN_PLAYERS }, emptyPlayer)
   );
   const [errors, setErrors] = useState<string[]>([]);
+  const [submitState, setSubmitState] = useState<SubmitState>('idle');
+  const [failedUploads, setFailedUploads] = useState<string[]>([]);
+  const [honeypot, setHoneypot] = useState('');
 
   function updateField<K extends keyof TeamInfo>(key: K, value: TeamInfo[K]) {
     setTeam((prev) => ({ ...prev, [key]: value }));
@@ -52,14 +57,21 @@ export default function RegisterWizard() {
     if (teamErrors.length === 0) setStep('players');
   }
 
-  function reviewAndSubmit() {
+  async function reviewAndSubmit() {
     // Re-check team info too — a captain/discord-tag mismatch, for instance,
     // can only be caught once both steps' data is in hand.
     const allErrors = [...validateTeamInfo(team), ...validatePlayers(players, team.captainDiscordTag)];
     setErrors(allErrors);
-    if (allErrors.length === 0) {
-      // Submission wiring lands in the next piece of this wizard.
-      console.log('Validated — ready to submit', { team, players });
+    if (allErrors.length > 0) return;
+
+    setSubmitState('submitting');
+    try {
+      const result = await submitRegistration(team, players, honeypot);
+      setFailedUploads(result.failedUploads);
+      setSubmitState('success');
+    } catch (err) {
+      setErrors([err instanceof Error ? err.message : 'Registration failed — please try again.']);
+      setSubmitState('error');
     }
   }
 
@@ -86,6 +98,21 @@ export default function RegisterWizard() {
         <ErrorList errors={errors} />
 
         <form className="flex flex-col gap-5" onSubmit={(e) => e.preventDefault()}>
+          {/* Honeypot — hidden from real visitors via CSS, not display:none
+              (some bots skip display:none), but still present for anything
+              that blindly autofills every input it finds. */}
+          <div className="absolute -left-[9999px]" aria-hidden="true">
+            <label htmlFor="website">Website</label>
+            <input
+              id="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+            />
+          </div>
+
           <div>
             <label className={labelClass} htmlFor="teamName">
               Team Name
@@ -176,6 +203,24 @@ export default function RegisterWizard() {
     );
   }
 
+  if (submitState === 'success') {
+    return (
+      <div className="mx-auto max-w-xl rounded-xl border border-gold/20 bg-bg-raised p-8 text-center">
+        <div className="mb-2 font-display text-2xl font-bold text-ink">Team Submitted!</div>
+        <p className="text-sm text-muted-soft">
+          Thanks — <span className="text-ink">{team.teamName}</span> has been submitted for review. It'll appear on
+          the site once LFGS staff approve it.
+        </p>
+        {failedUploads.length > 0 && (
+          <p className="mt-4 text-sm text-red-300">
+            Your team was registered, but these files failed to upload: {failedUploads.join(', ')}. Reach out on
+            Discord and staff can help you get them added.
+          </p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-xl">
       <div className="mb-6 flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[2px] text-gold">
@@ -209,13 +254,21 @@ export default function RegisterWizard() {
       )}
 
       <div className="mt-6 flex justify-between">
-        <button type="button" className="text-sm font-semibold text-muted-soft hover:text-ink" onClick={() => setStep('team')}>
+        <button
+          type="button"
+          className="text-sm font-semibold text-muted-soft hover:text-ink disabled:opacity-40"
+          disabled={submitState === 'submitting'}
+          onClick={() => setStep('team')}
+        >
           ← Back to Team Info
         </button>
-        {/* Actual submission (POST + presigned uploads) lands in the next
-            piece of this wizard — this currently only validates. */}
-        <button type="button" className={buttonClass} onClick={reviewAndSubmit}>
-          Review &amp; Submit →
+        <button
+          type="button"
+          className={`${buttonClass} disabled:opacity-40`}
+          disabled={submitState === 'submitting'}
+          onClick={reviewAndSubmit}
+        >
+          {submitState === 'submitting' ? 'Submitting…' : 'Review & Submit →'}
         </button>
       </div>
     </div>

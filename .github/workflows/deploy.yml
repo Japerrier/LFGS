@@ -48,7 +48,8 @@ jobs:
       # provider, plus these repo settings (Settings -> Secrets and variables
       # -> Actions):
       #   Secret:    AWS_DEPLOY_ROLE_ARN
-      #   Variables: AWS_REGION, S3_BUCKET_NAME, CLOUDFRONT_DISTRIBUTION_ID
+      #   Variables: AWS_REGION, S3_BUCKET_NAME, CLOUDFRONT_DISTRIBUTION_ID,
+      #              REGISTRATION_API_URL
       #
       # Runs before Build, not just before the S3 sync: the build itself
       # queries DynamoDB at build time (data/teams.ts, data/team-members.ts
@@ -61,6 +62,10 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Astro inlines PUBLIC_-prefixed vars into the client bundle at
+          # build time — see web/.env.example for the local-dev equivalent.
+          PUBLIC_REGISTRATION_API_URL: ${{ vars.REGISTRATION_API_URL }}
 
       - name: Sync to S3
         run: aws s3 sync dist/ "s3://${{ vars.S3_BUCKET_NAME }}" --delete
