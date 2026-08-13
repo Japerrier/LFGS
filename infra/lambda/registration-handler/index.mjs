@@ -196,6 +196,12 @@ async function registerTeam(body) {
     const name = BATTLE_TAG_PATTERN.exec(player.battleTag)[1].trim();
     const playerS3Name = `${slugify(name)}-${memberId.slice(-6)}`;
     const roles = player.roles ?? {};
+    // Deterministic — same key shape presign() below hands back as upload
+    // URLs, so this can be written now even though the files themselves
+    // don't land in S3 until the client uploads them afterward.
+    const seasonScreenshotImageKeys = player.screenshots.map(
+      (_, j) => `season-${SEASON}/teams/${teamS3Name}/${playerS3Name}/screenshot-${j + 1}`
+    );
     return {
       memberId,
       playerS3Name,
@@ -212,6 +218,7 @@ async function registerTeam(body) {
         registeredForSupport: roles.support ? true : undefined,
         battleNet: player.battleTag.trim(),
         discordUsername: player.discordTag.trim(),
+        seasonScreenshotImageKeys,
       },
     };
   });
