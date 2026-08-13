@@ -34,7 +34,7 @@ const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? 'https://lfgs.gg';
 
 const MIN_PLAYERS = 5;
 const MAX_PLAYERS = 8;
-const MAX_SCREENSHOTS_PER_PLAYER = 3;
+const REQUIRED_SCREENSHOTS_PER_PLAYER = 3;
 const MAX_SHORT_STRING = 100;
 const ALLOWED_BRACKETS = ['Platinum', 'Diamond'];
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
@@ -58,6 +58,46 @@ function isNonEmptyString(value, maxLength = MAX_SHORT_STRING) {
   return typeof value === 'string' && value.trim().length > 0 && value.length <= maxLength;
 }
 
+// A staff member (Head Coach / Assistant Coach) is entirely optional, but
+// once either of their two fields is filled in, both are required — no such
+// thing as a half-entered coach. Returns validation errors for this pair.
+function validateOptionalStaff(discordTag, battleTag, label) {
+  const errors = [];
+  const hasAny = isNonEmptyString(discordTag) || isNonEmptyString(battleTag);
+  if (!hasAny) return errors;
+
+  if (!isNonEmptyString(discordTag)) errors.push(`${label}DiscordTag is required`);
+  if (!isNonEmptyString(battleTag) || !BATTLE_TAG_PATTERN.test(battleTag)) {
+    errors.push(`${label}BattleTag must look like "Name#1234"`);
+  }
+  return errors;
+}
+
+function findStaffPlayerCollisions(players, staffDiscordTag, staffLabel) {
+  if (!isNonEmptyString(staffDiscordTag)) return [];
+  const tag = staffDiscordTag.trim();
+  const collisions = players
+    .map((p, i) => (isNonEmptyString(p.discordTag) && p.discordTag.trim() === tag ? i : null))
+    .filter((i) => i !== null);
+  if (collisions.length === 0) return [];
+  return [`${staffLabel}DiscordTag can't also belong to a player (players[${collisions.join(', ')}])`];
+}
+
+function findDuplicatePlayerValues(players, key) {
+  const seenAt = new Map();
+  players.forEach((p, i) => {
+    if (!isNonEmptyString(p[key])) return; // already flagged as required elsewhere
+    const value = p[key].trim();
+    seenAt.set(value, [...(seenAt.get(value) ?? []), i]);
+  });
+
+  const errors = [];
+  for (const [value, indices] of seenAt) {
+    if (indices.length > 1) errors.push(`players[${indices.join(', ')}] share the same ${key} ("${value}")`);
+  }
+  return errors;
+}
+
 // Returns a list of validation error messages — empty array means the
 // submission is well-formed. Doesn't touch the network or the honeypot;
 // callers check the honeypot separately so a caught bot always gets a
@@ -70,7 +110,6 @@ function validate(body) {
   if (!ALLOWED_BRACKETS.includes(body.bracket)) {
     errors.push(`bracket must be one of: ${ALLOWED_BRACKETS.join(', ')}`);
   }
-  if (!isNonEmptyString(body.headCoachName)) errors.push('headCoachName is required');
   if (!isNonEmptyString(body.captainDiscordTag)) errors.push('captainDiscordTag is required');
 
   if (body.logo !== null && body.logo !== undefined) {
@@ -78,6 +117,9 @@ function validate(body) {
       errors.push(`logo.contentType must be one of: ${ALLOWED_IMAGE_TYPES.join(', ')}`);
     }
   }
+
+  errors.push(...validateOptionalStaff(body.headCoachDiscordTag, body.headCoachBattleTag, 'headCoach'));
+  errors.push(...validateOptionalStaff(body.assistantCoachDiscordTag, body.assistantCoachBattleTag, 'assistantCoach'));
 
   if (!Array.isArray(body.players) || body.players.length < MIN_PLAYERS || body.players.length > MAX_PLAYERS) {
     errors.push(`players must be an array of ${MIN_PLAYERS}-${MAX_PLAYERS} entries`);
@@ -97,8 +139,8 @@ function validate(body) {
     if (!roles.tank && !roles.damage && !roles.support) {
       errors.push(`players[${i}].roles must select at least one of tank/damage/support`);
     }
-    if (!Array.isArray(player.screenshots) || player.screenshots.length > MAX_SCREENSHOTS_PER_PLAYER) {
-      errors.push(`players[${i}].screenshots must be an array of at most ${MAX_SCREENSHOTS_PER_PLAYER} entries`);
+    if (!Array.isArray(player.screenshots) || player.screenshots.length !== REQUIRED_SCREENSHOTS_PER_PLAYER) {
+      errors.push(`players[${i}].screenshots must have exactly ${REQUIRED_SCREENSHOTS_PER_PLAYER} entries`);
     } else {
       player.screenshots.forEach((shot, j) => {
         if (typeof shot !== 'object' || !ALLOWED_IMAGE_TYPES.includes(shot?.contentType)) {
@@ -108,6 +150,11 @@ function validate(body) {
     }
   });
 
+  errors.push(...findStaffPlayerCollisions(body.players, body.headCoachDiscordTag, 'headCoach'));
+  errors.push(...findStaffPlayerCollisions(body.players, body.assistantCoachDiscordTag, 'assistantCoach'));
+  errors.push(...findDuplicatePlayerValues(body.players, 'discordTag'));
+  errors.push(...findDuplicatePlayerValues(body.players, 'battleTag'));
+
   return errors;
 }
 
@@ -115,6 +162,24 @@ async function presign(key, contentType) {
   const command = new PutObjectCommand({ Bucket: MEDIA_BUCKET, Key: key, ContentType: contentType });
   const url = await getSignedUrl(s3Client, command, { expiresIn: UPLOAD_URL_EXPIRY_SECONDS });
   return { key, url };
+}
+
+// Builds a Head Coach / Assistant Coach Team_Members item, or null if this
+// staff slot wasn't filled in — both are entirely optional. Name is derived
+// from the battle tag the same way a player's is, for the same reason: the
+// raw Discord tag never becomes the public-facing name.
+function buildStaffItem(discordTag, battleTag, memberType, teamId) {
+  if (!isNonEmptyString(discordTag)) return null;
+  const name = BATTLE_TAG_PATTERN.exec(battleTag)[1].trim();
+  return {
+    teamId,
+    memberId: `memberId_${crypto.randomUUID()}`,
+    season: SEASON,
+    name,
+    memberType,
+    battleNet: battleTag.trim(),
+    discordUsername: discordTag.trim(),
+  };
 }
 
 // Does the actual work once a submission has passed validation and the
@@ -134,8 +199,6 @@ async function registerTeam(body) {
     return {
       memberId,
       playerS3Name,
-      isCaptain: player.discordTag.trim() === body.captainDiscordTag.trim(),
-      screenshotCount: player.screenshots.length,
       item: {
         teamId,
         memberId,
@@ -153,8 +216,6 @@ async function registerTeam(body) {
     };
   });
 
-  const headCoachMemberId = `memberId_${crypto.randomUUID()}`;
-
   const teamItem = {
     teamId,
     season: SEASON,
@@ -165,19 +226,20 @@ async function registerTeam(body) {
     ...(body.logo ? { logoKey: `season-${SEASON}/teams/${teamS3Name}/logo` } : {}),
   };
 
-  const headCoachItem = {
-    teamId,
-    memberId: headCoachMemberId,
-    season: SEASON,
-    name: body.headCoachName.trim(),
-    memberType: 'Head Coach',
-  };
+  const headCoachItem = buildStaffItem(body.headCoachDiscordTag, body.headCoachBattleTag, 'Head Coach', teamId);
+  const assistantCoachItem = buildStaffItem(
+    body.assistantCoachDiscordTag,
+    body.assistantCoachBattleTag,
+    'Assistant Coach',
+    teamId
+  );
 
   await dynamoClient.send(
     new TransactWriteCommand({
       TransactItems: [
         { Put: { TableName: TEAMS_TABLE, Item: teamItem } },
-        { Put: { TableName: TEAM_MEMBERS_TABLE, Item: headCoachItem } },
+        ...(headCoachItem ? [{ Put: { TableName: TEAM_MEMBERS_TABLE, Item: headCoachItem } }] : []),
+        ...(assistantCoachItem ? [{ Put: { TableName: TEAM_MEMBERS_TABLE, Item: assistantCoachItem } }] : []),
         ...players.map(({ item }) => ({ Put: { TableName: TEAM_MEMBERS_TABLE, Item: item } })),
       ],
     })

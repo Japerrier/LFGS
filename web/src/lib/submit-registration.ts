@@ -46,8 +46,11 @@ export async function submitRegistration(
   const payload = {
     teamName: team.teamName.trim(),
     bracket: team.bracket,
-    headCoachName: team.headCoachName.trim(),
     captainDiscordTag: team.captainDiscordTag.trim(),
+    headCoachDiscordTag: team.headCoachDiscordTag.trim(),
+    headCoachBattleTag: team.headCoachBattleTag.trim(),
+    assistantCoachDiscordTag: team.hasAssistantCoach ? team.assistantCoachDiscordTag.trim() : '',
+    assistantCoachBattleTag: team.hasAssistantCoach ? team.assistantCoachBattleTag.trim() : '',
     // A real visitor never fills this hidden field in — see the Lambda's
     // matching honeypot check.
     website: honeypot,

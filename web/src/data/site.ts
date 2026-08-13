@@ -6,7 +6,6 @@ export const externalLinks = {
   discord: 'https://discord.gg/lfgs',
   twitch: 'https://www.twitch.tv/lookingforgoldscrims',
   youtube: 'https://www.youtube.com/@lfgs7475',
-  registrationForm: 'https://docs.google.com/forms/d/e/1FAIpQLScAPfNzgUQ0QMBST8urLgMzuBUj6eFAjFXlYRg0_9FrShSGMA/viewform',
 };
 
 // status/date are the build-time fallback; activeAt/statusOnceActive drive the

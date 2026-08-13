@@ -12,7 +12,10 @@ export function emptyPlayer(): PlayerFormState {
     discordTag: '',
     battleTag: '',
     roles: { tank: false, damage: false, support: false },
-    screenshots: [],
+    // Fixed-length, null-filled (not []) — screenshots are indexed by slot
+    // via updateScreenshot below, and a null-filled array lets validation
+    // just check "no null left" instead of dealing with sparse-array holes.
+    screenshots: [null, null, null],
   };
 }
 
@@ -103,7 +106,7 @@ export default function PlayerBlock({ index, player, removable, onChange, onRemo
         </div>
 
         <div>
-          <div className={labelClass}>3 Most Recent Overwatch Season Profile Screenshots</div>
+          <div className={labelClass}>3 Most Recent Overwatch Season Profile Screenshots (required)</div>
           <div className="grid grid-cols-3 gap-2">
             {Array.from({ length: MAX_SCREENSHOTS_PER_PLAYER }).map((_, slot) => (
               <input
