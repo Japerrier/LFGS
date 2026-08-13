@@ -24,3 +24,6 @@ pnpm-debug.log*
 
 # real data typed into seed scripts — not for the public repo
 scripts/*.data.mjs
+
+# lambda deployment packages — built from source, not checked in
+infra/lambda/**/*.zip

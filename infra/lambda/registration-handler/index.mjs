@@ -1,0 +1,241 @@
+// POST /register — creates a Team + its Team_Members rows (all unapproved)
+// from a team-signup wizard submission, and returns presigned S3 PUT URLs
+// for the team logo and each player's screenshots so the browser can upload
+// those files directly, without routing file bytes through this Lambda.
+//
+// Deployed behind API Gateway as `lfgs-registration-handler` (see
+// infra/lambda/registration-handler in the repo for how this maps to
+// console-configured infra). For local development, run `npm run dev` here
+// instead — see local-server.mjs.
+//
+// Env vars (all have defaults matching the console-configured resources,
+// so nothing is required to run this against production):
+//   TEAMS_TABLE            (default: "Teams")
+//   TEAM_MEMBERS_TABLE     (default: "Team_Members")
+//   MEDIA_BUCKET           (default: "lfgs-media-011122914860-us-east-1-an")
+//   REGISTRATION_SEASON    (default: "8" — the season new signups are written
+//                           into; local-server.mjs overrides this to "99",
+//                           a season nothing on the live site ever queries,
+//                           so local testing can't pollute real data)
+//   ALLOWED_ORIGIN          (default: "https://lfgs.gg" — echoed back on the
+//                            response so CORS keeps working when this runs
+//                            behind API Gateway's own CORS config too)
+
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
+const TEAMS_TABLE = process.env.TEAMS_TABLE ?? 'Teams';
+const TEAM_MEMBERS_TABLE = process.env.TEAM_MEMBERS_TABLE ?? 'Team_Members';
+const MEDIA_BUCKET = process.env.MEDIA_BUCKET ?? 'lfgs-media-011122914860-us-east-1-an';
+const SEASON = Number(process.env.REGISTRATION_SEASON ?? 8);
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? 'https://lfgs.gg';
+
+const MIN_PLAYERS = 5;
+const MAX_PLAYERS = 8;
+const MAX_SCREENSHOTS_PER_PLAYER = 3;
+const MAX_SHORT_STRING = 100;
+const ALLOWED_BRACKETS = ['Platinum', 'Diamond'];
+const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+const UPLOAD_URL_EXPIRY_SECONDS = 900;
+// Blizzard battle tags are "{name}#{digits}" — we only ever show the name
+// half publicly, never the full tag, so a player can't be tracked down
+// elsewhere from the site alone.
+const BATTLE_TAG_PATTERN = /^(.+)#\d+$/;
+
+const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const s3Client = new S3Client({});
+
+function slugify(value) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function isNonEmptyString(value, maxLength = MAX_SHORT_STRING) {
+  return typeof value === 'string' && value.trim().length > 0 && value.length <= maxLength;
+}
+
+// Returns a list of validation error messages — empty array means the
+// submission is well-formed. Doesn't touch the network or the honeypot;
+// callers check the honeypot separately so a caught bot always gets a
+// generic success response instead of a validation error that would help
+// it retry correctly.
+function validate(body) {
+  const errors = [];
+
+  if (!isNonEmptyString(body.teamName)) errors.push('teamName is required');
+  if (!ALLOWED_BRACKETS.includes(body.bracket)) {
+    errors.push(`bracket must be one of: ${ALLOWED_BRACKETS.join(', ')}`);
+  }
+  if (!isNonEmptyString(body.headCoachName)) errors.push('headCoachName is required');
+  if (!isNonEmptyString(body.captainDiscordTag)) errors.push('captainDiscordTag is required');
+
+  if (body.logo !== null && body.logo !== undefined) {
+    if (typeof body.logo !== 'object' || !ALLOWED_IMAGE_TYPES.includes(body.logo.contentType)) {
+      errors.push(`logo.contentType must be one of: ${ALLOWED_IMAGE_TYPES.join(', ')}`);
+    }
+  }
+
+  if (!Array.isArray(body.players) || body.players.length < MIN_PLAYERS || body.players.length > MAX_PLAYERS) {
+    errors.push(`players must be an array of ${MIN_PLAYERS}-${MAX_PLAYERS} entries`);
+    return errors; // Nothing further to check per-player without a valid array.
+  }
+
+  body.players.forEach((player, i) => {
+    if (typeof player !== 'object' || player === null) {
+      errors.push(`players[${i}] must be an object`);
+      return;
+    }
+    if (!isNonEmptyString(player.discordTag)) errors.push(`players[${i}].discordTag is required`);
+    if (!isNonEmptyString(player.battleTag) || !BATTLE_TAG_PATTERN.test(player.battleTag)) {
+      errors.push(`players[${i}].battleTag must look like "Name#1234"`);
+    }
+    const roles = player.roles ?? {};
+    if (!roles.tank && !roles.damage && !roles.support) {
+      errors.push(`players[${i}].roles must select at least one of tank/damage/support`);
+    }
+    if (!Array.isArray(player.screenshots) || player.screenshots.length > MAX_SCREENSHOTS_PER_PLAYER) {
+      errors.push(`players[${i}].screenshots must be an array of at most ${MAX_SCREENSHOTS_PER_PLAYER} entries`);
+    } else {
+      player.screenshots.forEach((shot, j) => {
+        if (typeof shot !== 'object' || !ALLOWED_IMAGE_TYPES.includes(shot?.contentType)) {
+          errors.push(`players[${i}].screenshots[${j}].contentType must be one of: ${ALLOWED_IMAGE_TYPES.join(', ')}`);
+        }
+      });
+    }
+  });
+
+  return errors;
+}
+
+async function presign(key, contentType) {
+  const command = new PutObjectCommand({ Bucket: MEDIA_BUCKET, Key: key, ContentType: contentType });
+  const url = await getSignedUrl(s3Client, command, { expiresIn: UPLOAD_URL_EXPIRY_SECONDS });
+  return { key, url };
+}
+
+// Does the actual work once a submission has passed validation and the
+// honeypot check: writes the Team + Team_Members rows (all atomically, so a
+// partial failure can't leave an orphaned team with no coach or vice versa),
+// and returns presigned upload URLs for every image slot the client needs to
+// fill in next.
+async function registerTeam(body) {
+  const teamId = `teamId_${crypto.randomUUID()}`;
+  const teamS3Name = `${slugify(body.teamName)}-${teamId.slice(-6)}`;
+
+  const players = body.players.map((player) => {
+    const memberId = `memberId_${crypto.randomUUID()}`;
+    const name = BATTLE_TAG_PATTERN.exec(player.battleTag)[1].trim();
+    const playerS3Name = `${slugify(name)}-${memberId.slice(-6)}`;
+    const roles = player.roles ?? {};
+    return {
+      memberId,
+      playerS3Name,
+      isCaptain: player.discordTag.trim() === body.captainDiscordTag.trim(),
+      screenshotCount: player.screenshots.length,
+      item: {
+        teamId,
+        memberId,
+        season: SEASON,
+        name,
+        memberType: 'Player',
+        approved: false,
+        captain: player.discordTag.trim() === body.captainDiscordTag.trim() || undefined,
+        registeredForTank: roles.tank ? true : undefined,
+        registeredForDps: roles.damage ? true : undefined,
+        registeredForSupport: roles.support ? true : undefined,
+        battleNet: player.battleTag.trim(),
+        discordUsername: player.discordTag.trim(),
+      },
+    };
+  });
+
+  const headCoachMemberId = `memberId_${crypto.randomUUID()}`;
+
+  const teamItem = {
+    teamId,
+    season: SEASON,
+    name: body.teamName.trim(),
+    bracket: body.bracket,
+    approved: false,
+    S3Name: teamS3Name,
+    ...(body.logo ? { logoKey: `season-${SEASON}/teams/${teamS3Name}/logo` } : {}),
+  };
+
+  const headCoachItem = {
+    teamId,
+    memberId: headCoachMemberId,
+    season: SEASON,
+    name: body.headCoachName.trim(),
+    memberType: 'Head Coach',
+  };
+
+  await dynamoClient.send(
+    new TransactWriteCommand({
+      TransactItems: [
+        { Put: { TableName: TEAMS_TABLE, Item: teamItem } },
+        { Put: { TableName: TEAM_MEMBERS_TABLE, Item: headCoachItem } },
+        ...players.map(({ item }) => ({ Put: { TableName: TEAM_MEMBERS_TABLE, Item: item } })),
+      ],
+    })
+  );
+
+  const logoUpload = body.logo ? await presign(teamItem.logoKey, body.logo.contentType) : null;
+
+  const playerUploads = await Promise.all(
+    players.map(async (player, i) => {
+      const screenshots = await Promise.all(
+        body.players[i].screenshots.map((shot, j) =>
+          presign(`season-${SEASON}/teams/${teamS3Name}/${player.playerS3Name}/screenshot-${j + 1}`, shot.contentType)
+        )
+      );
+      return { memberId: player.memberId, screenshots };
+    })
+  );
+
+  return { teamId, uploads: { logo: logoUpload, players: playerUploads } };
+}
+
+function jsonResponse(statusCode, body) {
+  return {
+    statusCode,
+    headers: {
+      'content-type': 'application/json',
+      'access-control-allow-origin': ALLOWED_ORIGIN,
+    },
+    body: JSON.stringify(body),
+  };
+}
+
+export async function handler(event) {
+  let body;
+  try {
+    body = JSON.parse(event.body ?? '{}');
+  } catch {
+    return jsonResponse(400, { error: 'Malformed JSON body' });
+  }
+
+  // Honeypot: a real visitor never fills this hidden field in. A bot that
+  // does gets a fake success so it has no signal to adapt against.
+  if (body.website) {
+    return jsonResponse(200, { ok: true });
+  }
+
+  const errors = validate(body);
+  if (errors.length > 0) {
+    return jsonResponse(400, { error: 'Validation failed', details: errors });
+  }
+
+  try {
+    const result = await registerTeam(body);
+    return jsonResponse(200, result);
+  } catch (err) {
+    console.error('Registration failed', err);
+    return jsonResponse(500, { error: 'Registration failed — please try again' });
+  }
+}
+
+export { validate, registerTeam };
