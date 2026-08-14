@@ -241,7 +241,7 @@ export default function RegisterWizard() {
               required
               onChange={(e) => updateField('captainDiscordTag', e.target.value)}
             />
-            <p className="mt-1.5 text-xs text-muted">Must match the Discord Tag you enter for that player below.</p>
+            <p className="mt-1.5 text-xs text-muted">Must match the Discord Tag of one of the players on the next page.</p>
           </div>
 
           <div>
