@@ -17,6 +17,11 @@
 //                           into; local-server.mjs overrides this to "99",
 //                           a season nothing on the live site ever queries,
 //                           so local testing can't pollute real data)
+//   CURRENT_OW_SEASON      (default: "4" — the most recent live Overwatch
+//                           season number, used only to label/name the 3
+//                           screenshot uploads (S4, S3, S2, ...). Bump this
+//                           each time a new OW season starts; unrelated to
+//                           REGISTRATION_SEASON above.)
 //   ALLOWED_ORIGIN          (default: "https://lfgs.gg" — echoed back on the
 //                            response so CORS keeps working when this runs
 //                            behind API Gateway's own CORS config too)
@@ -30,6 +35,7 @@ const TEAMS_TABLE = process.env.TEAMS_TABLE ?? 'Teams';
 const TEAM_MEMBERS_TABLE = process.env.TEAM_MEMBERS_TABLE ?? 'Team_Members';
 const MEDIA_BUCKET = process.env.MEDIA_BUCKET ?? 'lfgs-media-011122914860-us-east-1-an';
 const SEASON = Number(process.env.REGISTRATION_SEASON ?? 8);
+const CURRENT_OW_SEASON = Number(process.env.CURRENT_OW_SEASON ?? 4);
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? 'https://lfgs.gg';
 
 const MIN_PLAYERS = 5;
@@ -43,6 +49,10 @@ const UPLOAD_URL_EXPIRY_SECONDS = 900;
 // half publicly, never the full tag, so a player can't be tracked down
 // elsewhere from the site alone.
 const BATTLE_TAG_PATTERN = /^(.+)#\d+$/;
+// Keeps the S3 object's file extension (and therefore the console's
+// inferred "Type") matching what was actually uploaded — the PutObject
+// Content-Type header alone doesn't drive that column.
+const EXTENSION_BY_CONTENT_TYPE = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
 
 const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const s3Client = new S3Client({});
@@ -52,6 +62,27 @@ function slugify(value) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+// Player/team display names come from a battle tag, which can contain
+// characters that are awkward in an S3 key (spaces, unicode) — strip
+// everything but the safe subset rather than URL-encoding it, so keys stay
+// readable in the console.
+function sanitizeForKey(value) {
+  return value.replace(/[^A-Za-z0-9_-]/g, '');
+}
+
+// Screenshot slots are ordered newest-to-oldest in the form (slot 0 is the
+// most recent season), so slot j maps to season CURRENT_OW_SEASON - j —
+// e.g. with CURRENT_OW_SEASON=4: S4, S3, S2. Filenames ignore whatever the
+// browser reports as the original filename (players rarely name them
+// accurately) and are instead derived purely from the player's name, slot
+// position, and declared content type — matching the {name}_S{n} convention
+// already used for season-8 teams' manually-uploaded screenshots.
+function screenshotFileName(name, slot, contentType) {
+  const owSeason = CURRENT_OW_SEASON - slot;
+  const ext = EXTENSION_BY_CONTENT_TYPE[contentType] ?? 'png';
+  return `${sanitizeForKey(name)}_S${owSeason}.${ext}`;
 }
 
 function isNonEmptyString(value, maxLength = MAX_SHORT_STRING) {
@@ -200,11 +231,12 @@ async function registerTeam(body) {
     // URLs, so this can be written now even though the files themselves
     // don't land in S3 until the client uploads them afterward.
     const seasonScreenshotImageKeys = player.screenshots.map(
-      (_, j) => `season-${SEASON}/teams/${teamS3Name}/${playerS3Name}/screenshot-${j + 1}`
+      (shot, j) => `season-${SEASON}/teams/${teamS3Name}/${playerS3Name}/${screenshotFileName(name, j, shot.contentType)}`
     );
     return {
       memberId,
       playerS3Name,
+      seasonScreenshotImageKeys,
       item: {
         teamId,
         memberId,
@@ -230,7 +262,9 @@ async function registerTeam(body) {
     bracket: body.bracket,
     approved: false,
     S3Name: teamS3Name,
-    ...(body.logo ? { logoKey: `season-${SEASON}/teams/${teamS3Name}/logo` } : {}),
+    ...(body.logo
+      ? { logoKey: `season-${SEASON}/teams/${teamS3Name}/logo.${EXTENSION_BY_CONTENT_TYPE[body.logo.contentType] ?? 'png'}` }
+      : {}),
   };
 
   const headCoachItem = buildStaffItem(body.headCoachDiscordTag, body.headCoachBattleTag, 'Head Coach', teamId);
@@ -257,9 +291,7 @@ async function registerTeam(body) {
   const playerUploads = await Promise.all(
     players.map(async (player, i) => {
       const screenshots = await Promise.all(
-        body.players[i].screenshots.map((shot, j) =>
-          presign(`season-${SEASON}/teams/${teamS3Name}/${player.playerS3Name}/screenshot-${j + 1}`, shot.contentType)
-        )
+        player.seasonScreenshotImageKeys.map((key, j) => presign(key, body.players[i].screenshots[j].contentType))
       );
       return { memberId: player.memberId, screenshots };
     })

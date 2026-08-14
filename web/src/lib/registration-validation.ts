@@ -8,6 +8,15 @@ import type { PlayerFormState } from '../components/PlayerBlock';
 export const MIN_PLAYERS = 5;
 export const MAX_PLAYERS = 8;
 export const MAX_SCREENSHOTS_PER_PLAYER = 3;
+// The most recent live Overwatch season — mirrors the Lambda's
+// CURRENT_OW_SEASON default (index.mjs). Screenshot slots are newest-to-
+// oldest, so slot j is season CURRENT_OW_SEASON - j; bump this alongside the
+// Lambda's env default each time a new OW season starts.
+export const CURRENT_OW_SEASON = 4;
+
+export function screenshotSeasonLabel(slot: number): string {
+  return `S${CURRENT_OW_SEASON - slot}`;
+}
 export const MAX_SHORT_STRING = 100;
 export const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 // The Lambda doesn't cap file size (presigned PUT URLs don't carry a size
@@ -65,15 +74,16 @@ export function validateTeamInfo(team: TeamInfoInput): string[] {
 
   errors.push(...validateOptionalStaff(team.headCoachDiscordTag, team.headCoachBattleTag, 'Head Coach'));
 
-  // Unlike Head Coach, Assistant Coach is only "in play" once the user has
-  // opted into it via the + Add Assistant Coach toggle — while that's off,
-  // whatever's in these two fields (should be empty, but just in case) is
-  // ignored rather than validated.
+  // Assistant Coach is only "in play" once the user has opted into it via
+  // the + Add Assistant Coach toggle — while that's off, whatever's in
+  // these two fields (should be empty, but just in case) is ignored rather
+  // than validated. Once shown, it follows the same optional-pair rule as
+  // Head Coach: fill in neither or both, but showing the section doesn't
+  // by itself make the fields required.
   if (team.hasAssistantCoach) {
-    if (!isNonEmptyString(team.assistantCoachDiscordTag)) errors.push("Assistant Coach's Discord Tag is required");
-    if (!isNonEmptyString(team.assistantCoachBattleTag) || !BATTLE_TAG_PATTERN.test(team.assistantCoachBattleTag)) {
-      errors.push('Assistant Coach\'s Battle.net Tag must look like "Name#1234"');
-    }
+    errors.push(
+      ...validateOptionalStaff(team.assistantCoachDiscordTag, team.assistantCoachBattleTag, 'Assistant Coach'),
+    );
   }
 
   return errors;
