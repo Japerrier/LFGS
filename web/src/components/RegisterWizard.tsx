@@ -156,8 +156,14 @@ export default function RegisterWizard() {
 
         <p className="mb-6 text-[15px] text-muted-soft">
           Register your team for the Season {CURRENT_SEASON} tournament. It only takes a few minutes to fill out the
-          form. Your team will appear on the website once your registration is approved. Please make sure to read the
-          rulebook before registering.
+          form. Your team will appear on the website once your registration is approved.{" "}
+          <strong>
+            Please make sure to read the{" "}
+            <a href="/tournament/rulebook/full" className="text-gold underline">
+              rulebook
+            </a>{" "}
+            before registering.
+          </strong>
         </p>
 
         <ErrorList errors={errors} />
