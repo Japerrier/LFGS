@@ -67,11 +67,28 @@ jobs:
           # build time — see web/.env.example for the local-dev equivalent.
           PUBLIC_REGISTRATION_API_URL: ${{ vars.REGISTRATION_API_URL }}
 
-      - name: Sync to S3
-        run: aws s3 sync dist/ "s3://${{ vars.S3_BUCKET_NAME }}" --delete
+      # Uploaded without --delete: filenames are content-hashed and immutable,
+      # and old ones may still be referenced by HTML a browser already has
+      # cached (open tab, back-button, bfcache). The prune step below removes
+      # only assets from two builds ago, once nothing can still reference them.
+      - name: Sync hashed assets to S3
+        run: >
+          aws s3 sync dist/_astro/ "s3://${{ vars.S3_BUCKET_NAME }}/_astro/"
+          --cache-control "public,max-age=31536000,immutable"
+
+      - name: Sync HTML and other files to S3
+        run: >
+          aws s3 sync dist/ "s3://${{ vars.S3_BUCKET_NAME }}" --delete
+          --exclude "_astro/*" --exclude "_meta/*"
 
       - name: Invalidate CloudFront cache
         run: >
           aws cloudfront create-invalidation
           --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}"
           --paths "/*"
+
+      # Keeps this build's assets plus the immediately-previous build's
+      # (tracked via a manifest in S3 — see the script for why bucket
+      # listing alone isn't enough) and deletes anything older than that.
+      - name: Prune assets from two builds ago
+        run: bash ../infra/scripts/prune-deploy-assets.sh "${{ vars.S3_BUCKET_NAME }}" dist/_astro
