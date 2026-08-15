@@ -4,7 +4,7 @@ import { getTeamsByBracket } from '../data/teams';
 import { BRACKETS, bracketToSlug } from '../lib/brackets';
 
 interface Props {
-  activeTab: 'schedule' | 'teams' | 'matchups' | 'standings' | 'playoffs' | 'rulebook';
+  activeTab: 'schedule' | 'teams' | 'matchups' | 'standings' | 'playoffs';
   /** Only meaningful (and only rendered) for bracket-scoped tabs. */
   bracket?: Bracket;
 }
@@ -14,7 +14,7 @@ const isBracketScoped =
   activeTab === 'teams' || activeTab === 'matchups' || activeTab === 'standings' || activeTab === 'playoffs';
 const activeBracketSlug = bracket ? bracketToSlug(bracket) : bracketToSlug('Diamond');
 
-function tabHref(tab: 'schedule' | 'teams' | 'matchups' | 'standings' | 'playoffs' | 'rulebook') {
+function tabHref(tab: 'schedule' | 'teams' | 'matchups' | 'standings' | 'playoffs') {
   switch (tab) {
     case 'schedule':
       return '/tournament/schedule';
@@ -26,8 +26,6 @@ function tabHref(tab: 'schedule' | 'teams' | 'matchups' | 'standings' | 'playoff
       return `/tournament/standings/${activeBracketSlug}`;
     case 'playoffs':
       return `/tournament/playoffs/${activeBracketSlug}`;
-    case 'rulebook':
-      return '/tournament/rulebook';
   }
 }
 
@@ -37,7 +35,6 @@ const tabs: { key: typeof activeTab; label: string }[] = [
   { key: 'matchups', label: 'Matchups' },
   { key: 'standings', label: 'Standings' },
   { key: 'playoffs', label: 'Playoffs' },
-  { key: 'rulebook', label: 'Rulebook' },
 ];
 ---
 

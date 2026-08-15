@@ -11,6 +11,7 @@ const { currentPath } = Astro.props;
 const navItems = [
   { label: 'Home', href: '/', match: (p: string) => p === '/' },
   { label: 'Tournament', href: '/tournament/schedule', match: (p: string) => p.startsWith('/tournament') || p.startsWith('/teams') },
+  { label: 'Rulebook', href: '/rulebook', match: (p: string) => p.startsWith('/rulebook') },
   { label: 'Hall of Fame', href: `/hall-of-fame/${LATEST_COMPLETE_SEASON}`, match: (p: string) => p.startsWith('/hall-of-fame') },
   { label: 'About', href: '/about', match: (p: string) => p.startsWith('/about') },
 ];

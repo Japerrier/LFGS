@@ -159,7 +159,7 @@ export default function RegisterWizard() {
           form. Your team will appear on the website once your registration is approved.{" "}
           <strong>
             Please make sure to read the{" "}
-            <a href="/tournament/rulebook/full" className="text-gold underline">
+            <a href="/rulebook" className="text-gold underline">
               rulebook
             </a>{" "}
             before registering.

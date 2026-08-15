@@ -1,6 +1,6 @@
 ---
-import Layout from '../../../layouts/Layout.astro';
-import { keyDates, prizePool, externalLinks } from '../../../data/site';
+import Layout from '../layouts/Layout.astro';
+import { keyDates, prizePool, externalLinks } from '../data/site';
 
 const sections = [
   { id: 'introduction', label: 'Introduction' },
@@ -71,9 +71,6 @@ const tiebreakerOrder = [
   <div class="content-width mx-auto px-8 pb-20 pt-10">
     <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-[220px_1fr]">
       <div class="rulebook-toc flex flex-col gap-5">
-        <a href="/tournament/rulebook" class="inline-flex items-center gap-1.5 text-[13.5px] text-muted">
-          ← Back to Rulebook
-        </a>
 
         <div>
           <div class="font-display text-sm font-semibold uppercase tracking-[3px] text-gold">Season 8</div>

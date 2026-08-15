@@ -64,16 +64,6 @@ export const leadership: LeadershipMember[] = [
   { name: 'Vosik', role: 'Staff', photo: '/images/lfgs-leadership/vosik.png' },
 ];
 
-export const rulebookHighlights: string[] = [
-  'Swiss-format regular season, 1 official Bo3 (first-to-3) match per team per week',
-  "Teams capped at 8 players; coaches & managers don't count toward the cap",
-  'Team skill-tier average capped at Diamond 3 (Diamond bracket) / Platinum 3 (Platinum bracket)',
-  '2 hero bans per map, sequential by role; picks/bans/roster lock each have a 90-second clock',
-  'Playoffs are single-elimination: 8-team quarterfinals through a grand final',
-  '5 pauses per match, 3 minutes each; one 5-minute bio break after map 2',
-  'Match results posted in #S8-results; disputes go to LFGS staff',
-];
-
 interface PrizePoolEntry {
   place: string;
   amount: string;
