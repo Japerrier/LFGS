@@ -1,5 +1,6 @@
 ---
 import { externalLinks } from '../data/site';
+import { LATEST_COMPLETE_SEASON } from '../lib/season';
 
 interface Props {
   currentPath: string;
@@ -10,7 +11,7 @@ const { currentPath } = Astro.props;
 const navItems = [
   { label: 'Home', href: '/', match: (p: string) => p === '/' },
   { label: 'Tournament', href: '/tournament/schedule', match: (p: string) => p.startsWith('/tournament') || p.startsWith('/teams') },
-  { label: 'Hall of Fame', href: '/hall-of-fame', match: (p: string) => p.startsWith('/hall-of-fame') },
+  { label: 'Hall of Fame', href: `/hall-of-fame/${LATEST_COMPLETE_SEASON}`, match: (p: string) => p.startsWith('/hall-of-fame') },
   { label: 'About', href: '/about', match: (p: string) => p.startsWith('/about') },
 ];
 ---
