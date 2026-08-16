@@ -1,10 +1,31 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { BRACKETS } from '../lib/brackets';
 import type { Bracket } from '../data/types';
 import PlayerBlock, { emptyPlayer, type PlayerFormState } from './PlayerBlock';
 import { MIN_PLAYERS, MAX_PLAYERS, validateTeamInfo, validatePlayers, type TeamInfoInput } from '../lib/registration-validation';
 import { submitRegistration } from '../lib/submit-registration';
 import { CURRENT_SEASON } from '../lib/season';
+
+// Cloudflare's script (loaded in register.astro) attaches this global —
+// typed here rather than in a shared .d.ts since it's the only file that
+// touches it.
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (
+        container: HTMLElement,
+        options: {
+          sitekey: string;
+          callback: (token: string) => void;
+          'expired-callback': () => void;
+        }
+      ) => string;
+      reset: (widgetId: string) => void;
+    };
+  }
+}
+
+const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
 
 type TeamInfo = TeamInfoInput;
 
@@ -69,6 +90,40 @@ export default function RegisterWizard() {
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const [failedUploads, setFailedUploads] = useState<string[]>([]);
   const [honeypot, setHoneypot] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const turnstileWidgetId = useRef<string | null>(null);
+
+  // Rendered only once the Review step mounts, not earlier — Turnstile
+  // tokens are single-use and expire ~5 minutes after being solved, so
+  // rendering it on step 1 could leave a captain with a dead token by the
+  // time they've filled in 8 players and reach Submit.
+  useEffect(() => {
+    if (step !== 'review') return;
+    const container = turnstileRef.current;
+    if (!container || !TURNSTILE_SITE_KEY) return;
+
+    let cancelled = false;
+    function tryRender() {
+      if (cancelled || !container) return;
+      if (!window.turnstile) {
+        setTimeout(tryRender, 100);
+        return;
+      }
+      turnstileWidgetId.current = window.turnstile.render(container, {
+        sitekey: TURNSTILE_SITE_KEY!,
+        callback: setTurnstileToken,
+        'expired-callback': () => setTurnstileToken(null),
+      });
+    }
+    tryRender();
+
+    return () => {
+      cancelled = true;
+      turnstileWidgetId.current = null;
+      setTurnstileToken(null);
+    };
+  }, [step]);
 
   const staffTags = {
     captainDiscordTag: team.captainDiscordTag,
@@ -103,12 +158,17 @@ export default function RegisterWizard() {
   async function handleSubmit() {
     setSubmitState('submitting');
     try {
-      const result = await submitRegistration(team, players, honeypot);
+      const result = await submitRegistration(team, players, honeypot, turnstileToken);
       setFailedUploads(result.failedUploads);
       setSubmitState('success');
     } catch (err) {
       setErrors([err instanceof Error ? err.message : 'Registration failed — please try again.']);
       setSubmitState('error');
+      // The token was either consumed by that request or rejected outright —
+      // either way it can't be reused, so reset the widget for a fresh solve
+      // rather than leaving Submit stuck disabled on a dead token.
+      if (turnstileWidgetId.current) window.turnstile?.reset(turnstileWidgetId.current);
+      setTurnstileToken(null);
     }
   }
 
@@ -393,6 +453,8 @@ export default function RegisterWizard() {
           ))}
         </div>
 
+        <div ref={turnstileRef} className="mt-6" />
+
         <div className="mt-6 flex justify-between">
           <button
             type="button"
@@ -408,7 +470,7 @@ export default function RegisterWizard() {
           <button
             type="button"
             className={`${buttonClass} disabled:opacity-40`}
-            disabled={submitState === 'submitting'}
+            disabled={submitState === 'submitting' || !turnstileToken}
             onClick={handleSubmit}
           >
             {submitState === 'submitting' ? 'Submitting…' : 'Submit'}

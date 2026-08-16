@@ -8,8 +8,9 @@
 // console-configured infra). For local development, run `npm run dev` here
 // instead — see local-server.mjs.
 //
-// Env vars (all have defaults matching the console-configured resources,
-// so nothing is required to run this against production):
+// Env vars (all but TURNSTILE_SECRET have defaults matching the
+// console-configured resources, so nothing else is required to run this
+// against production):
 //   TEAMS_TABLE            (default: "Teams")
 //   TEAM_MEMBERS_TABLE     (default: "Team_Members")
 //   MEDIA_BUCKET           (default: "lfgs-media-011122914860-us-east-1-an")
@@ -25,6 +26,11 @@
 //   ALLOWED_ORIGIN          (default: "https://lfgs.gg" — echoed back on the
 //                            response so CORS keeps working when this runs
 //                            behind API Gateway's own CORS config too)
+//   TURNSTILE_SECRET        (no default — required. Cloudflare Turnstile
+//                            secret key, verified against the token the
+//                            client solved before any signup work happens.
+//                            local-server.mjs defaults this to Cloudflare's
+//                            dedicated "always passes" testing secret.)
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
@@ -37,6 +43,8 @@ const MEDIA_BUCKET = process.env.MEDIA_BUCKET ?? 'lfgs-media-011122914860-us-eas
 const SEASON = Number(process.env.REGISTRATION_SEASON ?? 8);
 const CURRENT_OW_SEASON = Number(process.env.CURRENT_OW_SEASON ?? 4);
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? 'https://lfgs.gg';
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET;
+const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 const MIN_PLAYERS = 5;
 const MAX_PLAYERS = 8;
@@ -127,6 +135,32 @@ function findDuplicatePlayerValues(players, key) {
     if (indices.length > 1) errors.push(`players[${indices.join(', ')}] share the same ${key} ("${value}")`);
   }
   return errors;
+}
+
+// Verifies a Turnstile token with Cloudflare. Any failure — a missing/bad
+// token, or Cloudflare itself being unreachable — resolves to false rather
+// than throwing, so the caller has one branch to fail closed on. Tokens are
+// single-use and expire ~5 minutes after the client solves them.
+async function verifyTurnstile(token, remoteIp) {
+  if (typeof token !== 'string' || token.length === 0) return false;
+
+  try {
+    const response = await fetch(TURNSTILE_VERIFY_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        secret: TURNSTILE_SECRET,
+        response: token,
+        ...(remoteIp ? { remoteip: remoteIp } : {}),
+      }),
+    });
+    if (!response.ok) return false;
+    const result = await response.json();
+    return result.success === true;
+  } catch (err) {
+    console.error('Turnstile verification request failed', err);
+    return false;
+  }
 }
 
 // Returns a list of validation error messages — empty array means the
@@ -320,9 +354,19 @@ export async function handler(event) {
   }
 
   // Honeypot: a real visitor never fills this hidden field in. A bot that
-  // does gets a fake success so it has no signal to adapt against.
+  // does gets a fake success so it has no signal to adapt against. Checked
+  // first since it's free — no reason to spend a Turnstile verification
+  // call on a submission this already condemns.
   if (body.website) {
     return jsonResponse(200, { ok: true });
+  }
+
+  // Fail closed: registration stays open for weeks at a time, so a briefly
+  // unavailable Turnstile service should block signups rather than silently
+  // let everything through.
+  const turnstileOk = await verifyTurnstile(body.turnstileToken, event.requestContext?.http?.sourceIp);
+  if (!turnstileOk) {
+    return jsonResponse(403, { error: 'Verification failed — please try again, or contact LFGS staff on Discord.' });
   }
 
   const errors = validate(body);

@@ -16,6 +16,10 @@ import { createServer } from 'node:http';
 
 process.env.REGISTRATION_SEASON ??= '99';
 process.env.ALLOWED_ORIGIN ??= 'http://localhost:4321';
+// Cloudflare's dedicated "always passes" secret key — pairs with the matching
+// test site key in web/.env.example. Verifies successfully against any token
+// minted by that test site key, regardless of hostname.
+process.env.TURNSTILE_SECRET ??= '1x0000000000000000000000000000000AA';
 
 const { handler } = await import('./index.mjs');
 

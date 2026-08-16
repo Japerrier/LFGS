@@ -41,7 +41,8 @@ async function uploadFile(file: File, target: UploadTarget): Promise<void> {
 export async function submitRegistration(
   team: TeamInfoInput,
   players: PlayerFormState[],
-  honeypot: string
+  honeypot: string,
+  turnstileToken: string | null
 ): Promise<SubmitResult> {
   const payload = {
     teamName: team.teamName.trim(),
@@ -54,6 +55,7 @@ export async function submitRegistration(
     // A real visitor never fills this hidden field in — see the Lambda's
     // matching honeypot check.
     website: honeypot,
+    turnstileToken,
     logo: team.logo ? { contentType: team.logo.type } : null,
     players: players.map((p) => ({
       discordTag: p.discordTag.trim(),
