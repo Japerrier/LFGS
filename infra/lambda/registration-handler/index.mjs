@@ -35,6 +35,13 @@
 //                            client solved before any signup work happens.
 //                            local-server.mjs defaults this to Cloudflare's
 //                            dedicated "always passes" testing secret.)
+//   DISCORD_WEBHOOK_URL     (no default — optional. If set, posts a
+//                            notification to a staff Discord channel once a
+//                            team is registered. Never fires for season 99
+//                            (test) submissions — see TEST_SEASON below —
+//                            regardless of whether this happens to be set in
+//                            the calling shell, so local-server.mjs needs no
+//                            override for it.)
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
@@ -49,6 +56,12 @@ const CURRENT_OW_SEASON = Number(process.env.CURRENT_OW_SEASON ?? 4);
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? 'https://lfgs.gg';
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET;
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+// Matches local-server.mjs's REGISTRATION_SEASON override — the one season
+// nothing on the live site ever queries. Gating on this (not just on
+// whether DISCORD_WEBHOOK_URL is set) means test submissions can never page
+// staff, even if that var somehow ends up set in a local shell.
+const TEST_SEASON = 99;
 
 const MIN_PLAYERS = 5;
 const MAX_PLAYERS = 8;
@@ -169,6 +182,37 @@ async function verifyTurnstile(token, remoteIp) {
   } catch (err) {
     console.error('Turnstile verification request failed', err);
     return false;
+  }
+}
+
+// Posts a staff notification for a newly-registered team. Never throws —
+// awaited (not fire-and-forget) so it can't be cut off by Lambda freezing
+// the execution environment right after the handler returns, but any
+// failure is swallowed so a Discord outage can never fail a registration
+// that's already been written.
+async function notifyDiscord(teamItem, captainDiscordTag, playerCount) {
+  if (!DISCORD_WEBHOOK_URL || teamItem.season === TEST_SEASON) return;
+
+  try {
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        embeds: [
+          {
+            title: `New team registered: ${teamItem.name}`,
+            color: 0xf0b429,
+            fields: [
+              { name: 'Bracket', value: teamItem.bracket, inline: true },
+              { name: 'Captain', value: captainDiscordTag, inline: true },
+              { name: 'Players', value: String(playerCount), inline: true },
+            ],
+          },
+        ],
+      }),
+    });
+  } catch (err) {
+    console.error('Discord notification failed', err);
   }
 }
 
@@ -336,6 +380,8 @@ async function registerTeam(body) {
       ],
     })
   );
+
+  await notifyDiscord(teamItem, body.captainDiscordTag.trim(), players.length);
 
   const logoUpload = body.logo ? await presign(teamItem.logoKey, body.logo.contentType) : null;
 
