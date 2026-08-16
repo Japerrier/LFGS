@@ -2,10 +2,14 @@ import type { TeamInfoInput } from './registration-validation';
 import type { PlayerFormState } from '../components/PlayerBlock';
 
 // Mirrors the request/response contract of infra/lambda/registration-handler
-// (POST /register) — see that file for the authoritative shape.
+// (POST /register) — see that file for the authoritative shape. `url` +
+// `fields` together form an S3 presigned POST policy (not a plain PUT URL) —
+// the only presigning shape that lets the Lambda enforce a max upload size,
+// so `fields` must be submitted alongside the file, not discarded.
 interface UploadTarget {
   key: string;
   url: string;
+  fields: Record<string, string>;
 }
 
 interface RegisterResponse {
@@ -30,11 +34,14 @@ function apiUrl(): string {
 }
 
 async function uploadFile(file: File, target: UploadTarget): Promise<void> {
-  const response = await fetch(target.url, {
-    method: 'PUT',
-    headers: { 'content-type': file.type },
-    body: file,
-  });
+  const form = new FormData();
+  for (const [name, value] of Object.entries(target.fields)) form.append(name, value);
+  // S3 ignores every field appended after `file`, so it has to go last. No
+  // content-type header is set here on purpose — the browser needs to set
+  // its own multipart boundary, which an explicit header would override.
+  form.append('file', file);
+
+  const response = await fetch(target.url, { method: 'POST', body: form });
   if (!response.ok) throw new Error(`Upload failed for ${file.name} (${response.status})`);
 }
 

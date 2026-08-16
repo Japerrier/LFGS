@@ -15,14 +15,19 @@ export const MAX_SCREENSHOTS_PER_PLAYER = 3;
 export const CURRENT_OW_SEASON = 4;
 
 export function screenshotSeasonLabel(slot: number): string {
-  return `S${CURRENT_OW_SEASON - slot}`;
+  return `2026: Season ${CURRENT_OW_SEASON - slot}`;
 }
 export const MAX_SHORT_STRING = 100;
 export const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
-// The Lambda doesn't cap file size (presigned PUT URLs don't carry a size
-// condition) — this is a client-side-only guard to stop someone accidentally
-// uploading something huge, not a security boundary.
+// The real boundary is enforced server-side via the presigned POST's
+// content-length-range condition (see MAX_UPLOAD_BYTES in
+// infra/lambda/registration-handler/index.mjs — keep both in sync). This
+// copy exists to reject an oversized file before the user spends time
+// uploading it, not as the actual security boundary.
 export const MAX_FILE_SIZE_BYTES = 8 * 1024 * 1024;
+// Shown next to file inputs so the limit is known before a file is picked,
+// rather than only surfacing via validateImageFile's error after the fact.
+export const IMAGE_REQUIREMENTS_TEXT = `PNG, JPEG, or WEBP · max ${MAX_FILE_SIZE_BYTES / 1024 / 1024}MB`;
 export const BATTLE_TAG_PATTERN = /^(.+)#\d+$/;
 
 function isNonEmptyString(value: string, maxLength = MAX_SHORT_STRING): boolean {

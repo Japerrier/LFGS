@@ -2,7 +2,14 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { BRACKETS } from '../lib/brackets';
 import type { Bracket } from '../data/types';
 import PlayerBlock, { emptyPlayer, type PlayerFormState } from './PlayerBlock';
-import { MIN_PLAYERS, MAX_PLAYERS, validateTeamInfo, validatePlayers, type TeamInfoInput } from '../lib/registration-validation';
+import {
+  MIN_PLAYERS,
+  MAX_PLAYERS,
+  IMAGE_REQUIREMENTS_TEXT,
+  validateTeamInfo,
+  validatePlayers,
+  type TeamInfoInput,
+} from '../lib/registration-validation';
 import { submitRegistration } from '../lib/submit-registration';
 import { CURRENT_SEASON } from '../lib/season';
 
@@ -263,13 +270,31 @@ export default function RegisterWizard() {
             <label className={labelClass} htmlFor="logo">
               Team Logo
             </label>
-            <input
-              id="logo"
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              className={`${inputClass} file:mr-3 file:rounded-md file:border-0 file:bg-gold/15 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-gold`}
-              onChange={(e) => updateField('logo', e.target.files?.[0] ?? null)}
-            />
+            {/* Same reasoning as PlayerBlock's screenshot inputs: the native
+                file input can't have a previously-chosen file restored into
+                its display (browsers block that for security), so switching
+                steps and back would otherwise show "No file chosen" even
+                though team.logo is still set. Driving the visible text from
+                state instead of the input sidesteps that entirely. */}
+            <label
+              htmlFor="logo"
+              className={`${inputClass} flex cursor-pointer items-center gap-3`}
+            >
+              <span className="shrink-0 rounded-md bg-gold/15 px-3 py-1.5 text-xs font-semibold text-gold">
+                Choose File
+              </span>
+              <span className={`truncate ${team.logo ? 'text-ink' : 'text-muted-soft'}`}>
+                {team.logo ? team.logo.name : 'No file selected'}
+              </span>
+              <input
+                id="logo"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="sr-only"
+                onChange={(e) => updateField('logo', e.target.files?.[0] ?? null)}
+              />
+            </label>
+            <p className="mt-1.5 text-xs text-muted">{IMAGE_REQUIREMENTS_TEXT}</p>
           </div>
 
           <div>

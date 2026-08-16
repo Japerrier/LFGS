@@ -1,4 +1,4 @@
-import { MAX_SCREENSHOTS_PER_PLAYER, screenshotSeasonLabel } from '../lib/registration-validation';
+import { MAX_SCREENSHOTS_PER_PLAYER, IMAGE_REQUIREMENTS_TEXT, screenshotSeasonLabel } from '../lib/registration-validation';
 
 export interface PlayerFormState {
   discordTag: string;
@@ -107,15 +107,15 @@ export default function PlayerBlock({ index, player, removable, onChange, onRemo
 
         <div>
           <div className={labelClass}>3 Most Recent Overwatch Season Profile Screenshots (required)</div>
+          {/* One line for all 3 slots, not one per input — they're the same
+              requirement shown three times side by side otherwise. */}
+          <p className="mb-2 text-xs text-muted">{IMAGE_REQUIREMENTS_TEXT}</p>
           <div className="grid grid-cols-3 gap-2">
             {Array.from({ length: MAX_SCREENSHOTS_PER_PLAYER }).map((_, slot) => {
               const hasFile = player.screenshots[slot] !== null;
               return (
                 <div key={slot} className="flex flex-col gap-1">
-                  <span className="text-[11px] font-semibold text-muted-soft">
-                    {screenshotSeasonLabel(slot)}
-                    {slot === 0 ? ' (most recent)' : ''}
-                  </span>
+                  <span className="text-[11px] font-semibold text-muted-soft">{screenshotSeasonLabel(slot)}</span>
                   {/* Native file inputs render a filename after the button that
                       can't be styled or truncated, and overflows the column at
                       narrow widths — so the input itself is visually hidden

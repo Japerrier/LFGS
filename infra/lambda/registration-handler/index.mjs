@@ -1,7 +1,11 @@
 // POST /register — creates a Team + its Team_Members rows (all unapproved)
-// from a team-signup wizard submission, and returns presigned S3 PUT URLs
-// for the team logo and each player's screenshots so the browser can upload
-// those files directly, without routing file bytes through this Lambda.
+// from a team-signup wizard submission, and returns presigned S3 POST
+// policies for the team logo and each player's screenshots so the browser
+// can upload those files directly, without routing file bytes through this
+// Lambda. Presigned POST (rather than a presigned PUT URL) is deliberate:
+// it's the only S3 presigning mechanism that supports a content-length-range
+// condition, so oversized uploads get rejected by S3 itself rather than
+// relying on the client's own size check.
 //
 // Deployed behind API Gateway as `lfgs-registration-handler` (see
 // infra/lambda/registration-handler in the repo for how this maps to
@@ -34,8 +38,8 @@
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { S3Client } from '@aws-sdk/client-s3';
+import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 
 const TEAMS_TABLE = process.env.TEAMS_TABLE ?? 'Teams';
 const TEAM_MEMBERS_TABLE = process.env.TEAM_MEMBERS_TABLE ?? 'Team_Members';
@@ -53,6 +57,11 @@ const MAX_SHORT_STRING = 100;
 const ALLOWED_BRACKETS = ['Platinum', 'Diamond'];
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 const UPLOAD_URL_EXPIRY_SECONDS = 900;
+// Enforced by S3 itself via the presigned POST's content-length-range
+// condition below — not just a client-side courtesy. Mirrors
+// MAX_FILE_SIZE_BYTES in web/src/lib/registration-validation.ts; keep both
+// in sync if this changes.
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 // Blizzard battle tags are "{name}#{digits}" — we only ever show the name
 // half publicly, never the full tag, so a player can't be tracked down
 // elsewhere from the site alone.
@@ -224,9 +233,17 @@ function validate(body) {
 }
 
 async function presign(key, contentType) {
-  const command = new PutObjectCommand({ Bucket: MEDIA_BUCKET, Key: key, ContentType: contentType });
-  const url = await getSignedUrl(s3Client, command, { expiresIn: UPLOAD_URL_EXPIRY_SECONDS });
-  return { key, url };
+  const { url, fields } = await createPresignedPost(s3Client, {
+    Bucket: MEDIA_BUCKET,
+    Key: key,
+    Conditions: [
+      ['content-length-range', 1, MAX_UPLOAD_BYTES],
+      ['eq', '$Content-Type', contentType],
+    ],
+    Fields: { 'Content-Type': contentType },
+    Expires: UPLOAD_URL_EXPIRY_SECONDS,
+  });
+  return { key, url, fields };
 }
 
 // Builds a Head Coach / Assistant Coach Team_Members item, or null if this
