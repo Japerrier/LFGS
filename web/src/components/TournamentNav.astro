@@ -2,6 +2,7 @@
 import type { Bracket } from '../data/types';
 import { getTeamsByBracket } from '../data/teams';
 import { BRACKETS, bracketToSlug } from '../lib/brackets';
+import { CURRENT_LFGS_SEASON } from '../lib/season';
 
 interface Props {
   activeTab: 'schedule' | 'teams' | 'matchups' | 'standings' | 'playoffs';
@@ -40,7 +41,9 @@ const tabs: { key: typeof activeTab; label: string }[] = [
 
 <div class="mb-7 flex flex-wrap items-baseline justify-between gap-4">
   <div>
-    <div class="font-display text-sm font-semibold uppercase tracking-[3px] text-gold">Season 8</div>
+    <div class="font-display text-sm font-semibold uppercase tracking-[3px] text-gold">
+      Season {CURRENT_LFGS_SEASON}
+    </div>
     <h1 class="font-display text-[38px] font-bold text-ink">Tournament Hub</h1>
   </div>
 

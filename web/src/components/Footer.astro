@@ -1,5 +1,8 @@
 ---
 import { externalLinks } from '../data/site';
+import { CURRENT_LFGS_SEASON } from '../lib/season';
+
+const currentYear = new Date().getFullYear();
 ---
 
 <footer class="content-width mx-auto flex flex-wrap items-center justify-between gap-6 border-t border-gold/15 px-8 py-10">
@@ -12,5 +15,7 @@ import { externalLinks } from '../data/site';
     <a href={externalLinks.twitch} target="_blank" rel="noopener noreferrer">Twitch</a>
     <a href={externalLinks.youtube} target="_blank" rel="noopener noreferrer">YouTube</a>
   </div>
-  <div class="text-[12.5px] text-faint">©2026 · Season 8 · LFGS — fan-run community tournament</div>
+  <div class="text-[12.5px] text-faint">
+    ©{currentYear} · Season {CURRENT_LFGS_SEASON} · LFGS — fan-run community tournament
+  </div>
 </footer>

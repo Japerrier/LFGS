@@ -3,6 +3,7 @@ import Layout from '../../../layouts/Layout.astro';
 import TournamentNav from '../../../components/TournamentNav.astro';
 import { getTeamsByBracket, teamInitials } from '../../../data/teams';
 import { BRACKETS, bracketFromSlug, bracketToSlug } from '../../../lib/brackets';
+import { CURRENT_LFGS_SEASON } from '../../../lib/season';
 
 export function getStaticPaths() {
   return BRACKETS.map((b) => ({ params: { bracket: bracketToSlug(b) } }));
@@ -19,7 +20,7 @@ const bracketTeams = getTeamsByBracket(bracket);
 
     {bracketTeams.length === 0 ? (
       <div class="rounded-xl border border-gold/12 bg-bg-raised p-8 text-center text-muted">
-        No {bracket} teams have been approved yet. Check back once Season 8 registration closes.
+        No {bracket} teams have been approved yet. Check back once Season {CURRENT_LFGS_SEASON} registration closes.
       </div>
     ) : (
       <div class="grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">

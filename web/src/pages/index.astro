@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { teams, teamInitials } from '../data/teams';
 import { externalLinks } from '../data/site';
+import { CURRENT_LFGS_SEASON } from '../lib/season';
 
 const quickLinks = [
   { label: 'Schedule', desc: 'Stay up to date with tournament deadlines', href: '/tournament/schedule', shape: 'rounded-sm' },
@@ -62,7 +63,7 @@ const quickLinks = [
   <!-- TEAM LOGO CAROUSEL -->
   {teams.length > 0 && (
     <section class="overflow-hidden pb-16">
-      <h2 class="mb-7 text-center font-display text-[28px] font-bold text-ink">Season 8 Teams</h2>
+      <h2 class="mb-7 text-center font-display text-[28px] font-bold text-ink">Season {CURRENT_LFGS_SEASON} Teams</h2>
       <div class="mx-auto w-[95%] px-8">
         <div class="relative" data-team-carousel>
           <div class="flex flex-nowrap justify-center gap-[54px]" data-team-track>

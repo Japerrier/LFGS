@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { keyDates, prizePool, externalLinks } from '../data/site';
+import { CURRENT_LFGS_SEASON } from '../lib/season';
 
 const sections = [
   { id: 'introduction', label: 'Introduction' },
@@ -73,7 +74,7 @@ const tiebreakerOrder = [
       <div class="rulebook-toc flex flex-col gap-5">
 
         <div>
-          <div class="font-display text-sm font-semibold uppercase tracking-[3px] text-gold">Season 8</div>
+          <div class="font-display text-sm font-semibold uppercase tracking-[3px] text-gold">Season {CURRENT_LFGS_SEASON}</div>
           <h1 class="font-display text-2xl font-bold text-ink">Rulebook</h1>
         </div>
 
@@ -90,7 +91,7 @@ const tiebreakerOrder = [
         <section id="introduction">
           <h2 class="mb-3 font-display text-xl font-bold text-ink">Introduction</h2>
           <p class="text-sm leading-relaxed text-muted-softer">
-            Looking For Gold Scrims (LFGS) welcomes you all to the Season 8 Fall 2026 Tournament! This season will
+            Looking For Gold Scrims (LFGS) welcomes you all to the Season {CURRENT_LFGS_SEASON} Fall 2026 Tournament! This season will
             support both Platinum and Diamond brackets. LFGS staff will provide live match castings, prize pools for
             1st, 2nd, and 3rd place teams, and YouTube recordings of all casted matches. LFGS hopes to see returning
             and new teams alike. Thank you for signing up; this is going to be another amazing season, best of luck
@@ -142,7 +143,7 @@ const tiebreakerOrder = [
         <section id="team-registration">
           <h2 class="mb-3 font-display text-xl font-bold text-ink">Team Registration</h2>
           <p class="mb-3 text-sm leading-relaxed text-muted-softer">
-            LFGS Season 8 Fall 2026 Tournament is catered to the PC platform, Americas region EST, and using USA
+            LFGS Season {CURRENT_LFGS_SEASON} Fall 2026 Tournament is catered to the PC platform, Americas region EST, and using USA
             Central servers, but all regions and platforms are welcome to sign up.
           </p>
           <p class="mb-3 text-sm leading-relaxed text-muted-softer">
@@ -489,7 +490,7 @@ const tiebreakerOrder = [
           <h4 class="mb-2 font-display text-sm font-bold text-gold">Regular Season</h4>
           <img
             src="/images/rulebook/map-pool.png"
-            alt="Season 8 regular season map pool"
+            alt={`Season ${CURRENT_LFGS_SEASON} regular season map pool`}
             class="mb-4 w-full rounded-lg border border-gold/12"
           />
           <h4 class="mb-1.5 font-display text-sm font-bold text-gold">Playoffs Season</h4>
@@ -714,7 +715,7 @@ const tiebreakerOrder = [
         <section id="casting">
           <h2 class="mb-3 font-display text-xl font-bold text-ink">Casting</h2>
           <p class="mb-3 text-sm leading-relaxed text-muted-softer">
-            All casting of the LFGS Season 8 Fall 2026 Tournament will take place solely on the LFGS Twitch channel
+            All casting of the LFGS Season {CURRENT_LFGS_SEASON} Fall 2026 Tournament will take place solely on the LFGS Twitch channel
             in conjunction with LFGS moderators.
           </p>
           <p class="mb-4 text-sm leading-relaxed text-muted-softer">
