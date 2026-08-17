@@ -45,10 +45,7 @@ const badgeStyles: Record<string, string> = {
         <div class="mb-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {active.allStars.map((as) => (
             <div class="flex flex-col items-center gap-2.5 rounded-xl border border-gold/14 bg-bg-raised p-5 text-center">
-              <div class="flex h-14 w-14 items-center justify-center rounded-full bg-[repeating-linear-gradient(45deg,#1c1b20,#1c1b20_8px,#201f24_8px,#201f24_16px)] font-mono text-[9px] text-faint">
-                photo
-              </div>
-              <div class="font-display text-base font-bold text-ink">{as.name}</div>
+              <div class="font-display text-xl font-bold text-ink">{as.name}</div>
               <div class="text-[11px] font-semibold uppercase tracking-wide text-gold">{as.category} All-Star</div>
             </div>
           ))}
