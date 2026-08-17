@@ -56,7 +56,7 @@ const badgeStyles: Record<string, string> = {
     <h2 class="mb-4 font-display text-xl font-bold text-ink">Podium</h2>
     {hasMultipleBrackets ? (
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {(['Platinum', 'Diamond'] as const).map((bracket) => {
+        {(['Emerald', 'Diamond'] as const).map((bracket) => {
           const entries = active.podium.filter((p) => p.bracket === bracket);
           if (entries.length === 0) return null;
           return (

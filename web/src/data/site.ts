@@ -17,7 +17,7 @@ export const keyDates: KeyDate[] = [
   {
     label: 'Registration Opens',
     date: 'Sat, Jul 11, 2026',
-    desc: 'Team sign-ups begin for Diamond & Platinum',
+    desc: 'Team sign-ups begin for Emerald & Diamond',
     status: 'Open',
     activeAt: '2026-07-11T00:00:00',
     statusOnceActive: 'Open',
@@ -76,7 +76,7 @@ export const prizePool: PrizePoolEntry[] = [
   { place: '3rd Place', amount: '2,000 OW Coins' },
 ];
 
-function bracketPodium(season: number, bracket: 'Diamond' | 'Platinum'): HOFPodiumEntry[] {
+function bracketPodium(season: number, bracket: 'Diamond' | 'Emerald'): HOFPodiumEntry[] {
   // Season 8 is the first to run both brackets, so its placeholders name the bracket to
   // tell the two podiums apart; earlier seasons only ever had one bracket, so it's omitted.
   const label = season === 8 ? `${bracket} ` : '';
@@ -179,7 +179,7 @@ export const hofSeasons: HOFSeason[] = [8, 7, 6, 5, 4, 3].map((season) => ({
   podium:
     historicalPodiums[season] ??
     (season === 8
-      ? [...bracketPodium(season, 'Diamond'), ...bracketPodium(season, 'Platinum')]
+      ? [...bracketPodium(season, 'Diamond'), ...bracketPodium(season, 'Emerald')]
       : bracketPodium(season, 'Diamond')),
   allStars: historicalAllStars[season] ?? (season === 8 ? tbdAllStars : []),
 }));

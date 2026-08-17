@@ -1,4 +1,4 @@
-export type Bracket = 'Diamond' | 'Platinum';
+export type Bracket = 'Diamond' | 'Emerald';
 
 export interface Team {
   teamId: string;

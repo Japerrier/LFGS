@@ -11,9 +11,9 @@ const { bracket: bracketSlug } = Astro.params;
 const bracket = bracketFromSlug(bracketSlug!);
 
 // TODO: update once real per-bracket week counts are known post-registration.
-const platinumWeekCount = 1;
+const emeraldWeekCount = 1;
 const diamondWeekCount = 1;
-const weekCount = bracket === 'Platinum' ? platinumWeekCount : diamondWeekCount;
+const weekCount = bracket === 'Emerald' ? emeraldWeekCount : diamondWeekCount;
 const weeks = Array.from({ length: weekCount }, (_, i) => i + 1);
 
 function weekPairingBasis(week: number) {

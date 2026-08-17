@@ -67,7 +67,7 @@ const MIN_PLAYERS = 5;
 const MAX_PLAYERS = 8;
 const REQUIRED_SCREENSHOTS_PER_PLAYER = 3;
 const MAX_SHORT_STRING = 100;
-const ALLOWED_BRACKETS = ['Platinum', 'Diamond'];
+const ALLOWED_BRACKETS = ['Emerald', 'Diamond'];
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 const UPLOAD_URL_EXPIRY_SECONDS = 900;
 // Enforced by S3 itself via the presigned POST's content-length-range
