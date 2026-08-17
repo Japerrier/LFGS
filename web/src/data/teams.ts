@@ -1,6 +1,6 @@
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { dynamoDb } from '../lib/dynamodb';
-import { CURRENT_SEASON } from '../lib/season';
+import { CURRENT_LFGS_SEASON } from '../lib/season';
 import { slugify } from '../lib/slug';
 import type { Bracket, Team } from './types';
 
@@ -16,7 +16,7 @@ const { Items } = await dynamoDb.send(
   new QueryCommand({
     TableName: TEAMS_TABLE,
     KeyConditionExpression: 'season = :season',
-    ExpressionAttributeValues: { ':season': CURRENT_SEASON },
+    ExpressionAttributeValues: { ':season': CURRENT_LFGS_SEASON },
   })
 );
 

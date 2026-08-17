@@ -11,7 +11,7 @@ import {
   type TeamInfoInput,
 } from '../lib/registration-validation';
 import { submitRegistration } from '../lib/submit-registration';
-import { CURRENT_SEASON } from '../lib/season';
+import { CURRENT_LFGS_SEASON } from '../lib/season';
 
 // Cloudflare's script (loaded in register.astro) attaches this global —
 // typed here rather than in a shared .d.ts since it's the only file that
@@ -222,7 +222,7 @@ export default function RegisterWizard() {
         </div>
 
         <p className="mb-6 text-[15px] text-muted-soft">
-          Register your team for the Season {CURRENT_SEASON} tournament. It only takes a few minutes to fill out the
+          Register your team for the Season {CURRENT_LFGS_SEASON} tournament. It only takes a few minutes to fill out the
           form. Your team will appear on the website once your registration is approved.{" "}
           <strong>
             Please make sure to read the{" "}

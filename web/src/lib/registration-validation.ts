@@ -1,5 +1,6 @@
 import type { Bracket } from '../data/types';
 import type { PlayerFormState } from '../components/PlayerBlock';
+import { CURRENT_OW_SEASON_NUMBER, owSeasonLabel } from './season';
 
 // Mirrors infra/lambda/registration-handler/index.mjs — duplicated rather
 // than shared since the wizard and the Lambda are separate deployables
@@ -8,14 +9,14 @@ import type { PlayerFormState } from '../components/PlayerBlock';
 export const MIN_PLAYERS = 5;
 export const MAX_PLAYERS = 8;
 export const MAX_SCREENSHOTS_PER_PLAYER = 3;
-// The most recent live Overwatch season — mirrors the Lambda's
-// CURRENT_OW_SEASON default (index.mjs). Screenshot slots are newest-to-
-// oldest, so slot j is season CURRENT_OW_SEASON - j; bump this alongside the
-// Lambda's env default each time a new OW season starts.
-export const CURRENT_OW_SEASON = 4;
 
+// Screenshot slots are newest-to-oldest, so slot j is OW season
+// CURRENT_OW_SEASON_NUMBER - j. The Lambda's own CURRENT_OW_SEASON env var
+// (index.mjs) drives the same slot math for uploaded filenames — bump both
+// alongside season.ts's CURRENT_OW_SEASON_YEAR/NUMBER each time a new OW
+// season starts.
 export function screenshotSeasonLabel(slot: number): string {
-  return `2026: Season ${CURRENT_OW_SEASON - slot}`;
+  return owSeasonLabel(CURRENT_OW_SEASON_NUMBER - slot);
 }
 export const MAX_SHORT_STRING = 100;
 export const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
