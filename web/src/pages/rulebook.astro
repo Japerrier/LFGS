@@ -12,6 +12,7 @@ const sections = [
   { id: 'player-registration', label: 'Player Registration' },
   { id: 'additional-players', label: 'Additional Players' },
   { id: 'ringer', label: 'Ringer' },
+  { id: 'allowed-inputs', label: 'Allowed Inputs' },
   { id: 'regular-season', label: 'Regular Season' },
   { id: 'hero-bans', label: 'Hero Bans' },
   { id: 'playoffs', label: 'Playoffs' },
@@ -372,6 +373,15 @@ const tiebreakerOrder = [
           </p>
         </section>
 
+        <section id="allowed-inputs">
+          <h2 class="mb-3 font-display text-xl font-bold text-ink">Allowed Inputs</h2>
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
+            Players may compete using mouse &amp; keyboard or a standard game controller. No other input devices
+            (e.g. drawing pads/tablets) are allowed. Aim assist of any type is not allowed, regardless of input
+            device.
+          </p>
+        </section>
+
         <section id="regular-season">
           <h2 class="mb-3 font-display text-xl font-bold text-ink">Regular Season</h2>
           <p class="mb-3 text-sm leading-relaxed text-muted-softer">
@@ -669,9 +679,13 @@ const tiebreakerOrder = [
             Team Captains must attempt in good faith to resolve the issues at hand privately in Discord direct
             messages with the other team's Captain before directly reaching out to the LFGS staff.
           </p>
-          <p class="mb-4 text-sm leading-relaxed text-muted-softer">
+          <p class="mb-3 text-sm leading-relaxed text-muted-softer">
             LFGS staff reserves the right to issue any formal warnings, temporary player bans, revoke match wins,
             disqualify a team, etc. from the tournament.
+          </p>
+          <p class="mb-4 text-sm leading-relaxed text-muted-softer">
+            Any form of cheating will result in the player being disqualified from the tournament. If a team has
+            more than 1 player disqualified for cheating, the team as a whole will also be disqualified.
           </p>
 
           <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
