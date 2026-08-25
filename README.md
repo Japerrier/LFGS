@@ -1,6 +1,6 @@
 # LFGS — Looking For Gold Scrims
 
-The site for LFGS, a fan-run Overwatch community scrim & tournament server. It covers team rosters, weekly schedules, matchups, playoff brackets, and a Hall of Fame going back to Season 3.
+The site for [LFGS](https://lfgs.gg), a fan-run Overwatch community scrim & tournament server. It covers team rosters, weekly schedules, matchups, playoff brackets, and a Hall of Fame going back to Season 3.
 
 ## About this project
 
