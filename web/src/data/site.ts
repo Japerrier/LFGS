@@ -56,7 +56,7 @@ export const leadership: LeadershipMember[] = [
   { name: 'MightyOwl', role: 'Co-Owner', photo: '/images/lfgs-leadership/mightyowl.png' },
   { name: 'CajunWiseguy', role: 'Moderator', photo: '/images/lfgs-leadership/cajunwiseguy.png' },
   { name: 'Critic', role: 'Moderator', photo: '/images/lfgs-leadership/critic.png' },
-  { name: 'PSI', role: 'Staff', photo: '/images/lfgs-leadership/psi.png' },
+  { name: 'PSI', role: 'Moderator', photo: '/images/lfgs-leadership/psi.png' },
   { name: 'Keegsmonswag', role: 'Staff', photo: '/images/lfgs-leadership/keegsmonswag.png' },
   { name: 'LadyQc', role: 'Staff', photo: '/images/lfgs-leadership/ladyqc.png' },
   { name: 'Xelemental', role: 'Staff', photo: '/images/lfgs-leadership/xelemental.png' },
