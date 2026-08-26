@@ -62,7 +62,7 @@ const staffLeadership = leadership.filter((ld) => ld.role === 'Staff');
       <h2 class="mb-1.5 font-display text-[26px] font-bold text-ink">LFGS Leadership</h2>
       <p class="text-sm text-muted">The owner, mods, and staff keeping the server running</p>
     </div>
-    <div class="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <div class="mb-4 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
       {coreLeadership.map((ld) => (
         <div class="flex flex-col items-center gap-3 rounded-[14px] border border-gold/14 bg-bg-raised px-[14px] py-6">
           <img src={ld.photo} alt={ld.name} class="h-[77px] w-[77px] rounded-full object-cover object-center" />
@@ -71,7 +71,7 @@ const staffLeadership = leadership.filter((ld) => ld.role === 'Staff');
         </div>
       ))}
     </div>
-    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
       {staffLeadership.map((ld) => (
         <div class="flex flex-col items-center gap-3 rounded-[14px] border border-gold/14 bg-bg-raised px-[14px] py-6">
           <img src={ld.photo} alt={ld.name} class="h-[77px] w-[77px] rounded-full object-cover object-center" />
