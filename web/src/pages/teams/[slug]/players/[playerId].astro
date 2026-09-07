@@ -3,6 +3,7 @@ import Layout from '../../../../layouts/Layout.astro';
 import { teams, teamInitials } from '../../../../data/teams';
 import { getMembersByTeamId, memberRoles } from '../../../../data/team-members';
 import { slugify } from '../../../../lib/slug';
+import { displayRank } from '../../../../lib/rank';
 
 export async function getStaticPaths() {
   const paths = [];
@@ -21,6 +22,14 @@ export async function getStaticPaths() {
 
 const { team, player } = Astro.props;
 const roles = memberRoles(player);
+const rank = displayRank(
+  { tank: player.peakRankTank, dps: player.peakRankDPS, support: player.peakRankSupport },
+  {
+    tank: Boolean(player.registeredForTank),
+    dps: Boolean(player.registeredForDps),
+    support: Boolean(player.registeredForSupport),
+  }
+);
 // Label each screenshot with its real season number before reversing, so the
 // labels stay correct (season 3, 2, 1) regardless of display order — and so a
 // player missing a later season (e.g. no season 3 yet) doesn't shift labels.
@@ -52,11 +61,14 @@ const screenshots = (player.seasonScreenshotImageKeys ?? [])
       </div>
     </div>
 
-    {roles.length > 0 && (
-      <div class="mb-7 flex flex-wrap gap-1.5">
-        {roles.map((r) => (
-          <span class="rounded-full bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">{r}</span>
-        ))}
+    {(roles.length > 0 || rank) && (
+      <div class="mb-7 flex flex-wrap items-center justify-between gap-1.5">
+        <div class="flex flex-wrap gap-1.5">
+          {roles.map((r) => (
+            <span class="rounded-full bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">{r}</span>
+          ))}
+        </div>
+        {rank && <span class="rounded-full bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">{rank}</span>}
       </div>
     )}
 

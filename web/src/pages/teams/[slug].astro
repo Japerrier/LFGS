@@ -5,6 +5,7 @@ import { getMembersByTeamId, memberRoles } from '../../data/team-members';
 import { bracketToSlug } from '../../lib/brackets';
 import { slugify } from '../../lib/slug';
 import { CURRENT_LFGS_SEASON } from '../../lib/season';
+import { displayRank } from '../../lib/rank';
 
 export async function getStaticPaths() {
   return Promise.all(
@@ -20,6 +21,18 @@ const roster = members.filter((m) => m.memberType === 'Player');
 const headCoach = members.find((m) => m.memberType === 'Head Coach');
 const assistantCoach = members.find((m) => m.memberType === 'Assistant Coach');
 const captain = roster.find((m) => m.captain);
+
+const rosterWithRank = roster.map((p) => ({
+  member: p,
+  rank: displayRank(
+    { tank: p.peakRankTank, dps: p.peakRankDPS, support: p.peakRankSupport },
+    {
+      tank: Boolean(p.registeredForTank),
+      dps: Boolean(p.registeredForDps),
+      support: Boolean(p.registeredForSupport),
+    }
+  ),
+}));
 ---
 
 <Layout title={team.name}>
@@ -47,6 +60,14 @@ const captain = roster.find((m) => m.captain);
         </div>
         <div class="font-display text-[34px] font-bold text-ink">{team.name}</div>
       </div>
+      {team.teamRank && (
+        <div class="flex flex-col items-end gap-1.5">
+          <div class="font-display text-xs font-semibold uppercase tracking-wide text-muted">Team Average</div>
+          <div class="rounded-md bg-gold/12 px-2.5 py-[3px] font-display text-xs font-semibold uppercase tracking-wide text-gold">
+            {team.teamRank}
+          </div>
+        </div>
+      )}
     </div>
 
     <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[2fr_1fr]">
@@ -58,7 +79,7 @@ const captain = roster.find((m) => m.captain);
           </div>
         ) : (
           <div class="mb-8 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-            {roster.map((p) => (
+            {rosterWithRank.map(({ member: p, rank }) => (
               <a href={`/teams/${team.slug}/players/${slugify(p.name)}`} class="overflow-hidden rounded-xl border border-gold/12 bg-bg-raised">
                 {p.profileImageKey && (
                   <img src={`/media/${p.profileImageKey}`} alt={`${p.name} profile`} class="h-30 w-full object-cover" />
@@ -68,10 +89,15 @@ const captain = roster.find((m) => m.captain);
                     <div class="font-display text-base font-bold text-ink">{p.name}</div>
                     {p.captain && <span class="text-[13px] text-gold">★</span>}
                   </div>
-                  <div class="flex flex-wrap gap-1.5">
-                    {memberRoles(p).map((r) => (
-                      <span class="rounded-full bg-gold/10 px-2.5 py-[3px] text-[11px] font-semibold text-gold">{r}</span>
-                    ))}
+                  <div class="flex flex-wrap items-center justify-between gap-1.5">
+                    <div class="flex flex-wrap gap-1.5">
+                      {memberRoles(p).map((r) => (
+                        <span class="rounded-full bg-gold/10 px-2.5 py-[3px] text-[11px] font-semibold text-gold">{r}</span>
+                      ))}
+                    </div>
+                    {rank && (
+                      <span class="rounded-full bg-gold/10 px-2.5 py-[3px] text-[11px] font-semibold text-gold">{rank}</span>
+                    )}
                   </div>
                 </div>
               </a>

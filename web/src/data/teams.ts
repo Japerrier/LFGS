@@ -1,16 +1,11 @@
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { dynamoDb } from '../lib/dynamodb';
+import { normalizeBracket } from '../lib/brackets';
 import { CURRENT_LFGS_SEASON } from '../lib/season';
 import { slugify } from '../lib/slug';
 import type { Bracket, Team } from './types';
 
 const TEAMS_TABLE = 'Teams';
-
-// DynamoDB test data has been entered as lowercase ("diamond"); normalize to
-// the capitalized form the rest of the app compares against.
-function normalizeBracket(bracket: string): Bracket {
-  return (bracket.charAt(0).toUpperCase() + bracket.slice(1).toLowerCase()) as Bracket;
-}
 
 const { Items } = await dynamoDb.send(
   new QueryCommand({
@@ -29,8 +24,9 @@ const rawTeams = (Items ?? [])
     baseSlug: slugify(item.name),
     season: item.season,
     name: item.name as string,
-    bracket: normalizeBracket(item.bracket),
+    bracket: normalizeBracket(item.bracket) as Bracket,
     logoKey: item.logoKey,
+    teamRank: item.teamRank,
   }));
 
 // Names aren't required to be unique, so slugs derived from them aren't

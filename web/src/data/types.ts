@@ -10,6 +10,10 @@ export interface Team {
   logoKey?: string;
   /** Only `true` shows the team on the site — missing/false/null all hide it. */
   approved?: boolean;
+  /** Top-5-by-SR roster average, floored to a rank label (e.g. "Emerald 3").
+   *  Computed and written by scripts/calculate-team-ranks.mjs — absent until
+   *  that's been run for this team, in which case no pillbox is shown. */
+  teamRank?: string;
 }
 
 export type MemberType = 'Player' | 'Head Coach' | 'Assistant Coach' | 'Manager';
@@ -27,6 +31,14 @@ export interface TeamMember {
   registeredForTank?: boolean;
   registeredForDps?: boolean;
   registeredForSupport?: boolean;
+  /** Peak competitive rank per role (e.g. "Platinum 3"), staff-entered.
+   *  Blank means "hasn't placed in this role" and is simply left out of the
+   *  displayed rank / team-average calculation — see displayRank in
+   *  web/src/lib/rank.ts. A malformed value (anything set but not a real
+   *  rank string) hides the player's rank entirely instead of guessing. */
+  peakRankTank?: string;
+  peakRankDPS?: string;
+  peakRankSupport?: string;
   profileImageKey?: string;
   smallProfileImageKey?: string;
   seasonScreenshotImageKeys?: string[];
