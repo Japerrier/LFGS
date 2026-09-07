@@ -34,8 +34,7 @@ const rank = displayRank(
 // labels stay correct (season 3, 2, 1) regardless of display order — and so a
 // player missing a later season (e.g. no season 3 yet) doesn't shift labels.
 const screenshots = (player.seasonScreenshotImageKeys ?? [])
-  .map((key, i) => ({ key, season: i + 1 }))
-  .reverse();
+  .map((key, i) => ({ key, season: i + 1 }));
 ---
 
 <Layout title={`${player.name} — ${team.name}`}>
