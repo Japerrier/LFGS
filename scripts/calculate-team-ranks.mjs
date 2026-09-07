@@ -13,6 +13,9 @@
 // errors on an older Node, upgrade Node rather than trying to work around
 // it).
 //
+// Only processes teams from CURRENT_LFGS_SEASON (web/src/lib/season.ts) —
+// past seasons' teamRank values are frozen and don't need recalculating.
+//
 // Teams without a recognized bracket (e.g. historical Hall of Fame seasons,
 // which don't have a `bracket` attribute at all) are skipped. Teams with no
 // player on the roster having a valid rank for any role are also skipped —
@@ -34,6 +37,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, ScanCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { computeTeamRank } from '../web/src/lib/rank.ts';
 import { BRACKETS, normalizeBracket } from '../web/src/lib/brackets.ts';
+import { CURRENT_LFGS_SEASON } from '../web/src/lib/season.ts';
 
 const TEAMS_TABLE = 'Teams';
 const TEAM_MEMBERS_TABLE = 'Team_Members';
@@ -69,7 +73,7 @@ async function main() {
     console.log('Dry run (no writes) — pass --apply to actually update DynamoDB.\n');
   }
 
-  const teams = await scanAll(TEAMS_TABLE);
+  const teams = (await scanAll(TEAMS_TABLE)).filter((team) => team.season === CURRENT_LFGS_SEASON);
 
   for (const team of teams) {
     const bracket = normalizeBracket(team.bracket);
