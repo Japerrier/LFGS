@@ -1,5 +1,6 @@
 import { getTeamsBySeason } from './teams';
 import { getMembersByTeamId, memberRoles } from './team-members';
+import { REGISTRATION_OPEN } from '../lib/season';
 import type { Bracket, HOFAllStar, HOFPodiumEntry, HOFSeason, KeyDate, LeadershipMember, TeamMember } from './types';
 
 export const externalLinks = {
@@ -18,17 +19,23 @@ export const keyDates: KeyDate[] = [
     label: 'Registration Opens',
     date: 'Sat, Jul 11, 2026',
     desc: 'Team sign-ups begin for Emerald & Diamond',
-    status: 'Open',
-    activeAt: '2026-07-11T00:00:00',
-    statusOnceActive: 'Open',
+    // Driven off REGISTRATION_OPEN (lib/season.ts) instead of an activeAt
+    // date — sign-ups close on a staff decision, not a fixed clock, so no
+    // client-side re-derivation here. 'Closed' stands in for "this window
+    // has passed," same convention as Regular Season Begins below.
+    status: REGISTRATION_OPEN ? 'Open' : 'Closed',
+    // Gold only while registration is actually open — once closed, this
+    // row is history and Registration Closes below becomes the highlighted one.
+    highlight: REGISTRATION_OPEN,
   },
   {
     label: 'Registration Closes',
     date: 'Sun, Sep 6, 2026 · 11:59 PM EST',
     desc: 'Last chance to lock in a roster',
-    status: 'Closed',
-    activeAt: '2026-09-06T23:59:00',
-    statusOnceActive: 'Closed',
+    status: REGISTRATION_OPEN ? 'Upcoming' : 'Closed',
+    // Gold once registration has actually closed, so this pill (not the
+    // generic gray "Closed" styling) signals it's the current live state.
+    highlight: !REGISTRATION_OPEN,
   },
   {
     label: 'Regular Season Begins',

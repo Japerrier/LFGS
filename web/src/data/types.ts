@@ -58,6 +58,12 @@ export interface KeyDate {
   activeAt?: string;
   /** Status to show once "now" (in America/New_York) reaches activeAt. */
   statusOnceActive?: KeyDateStatus;
+  /** Force the gold "currently active" pill styling regardless of what
+   *  `status` says — for rows where gold means "this is the live state of
+   *  the thing" rather than literally "Open" (e.g. Registration Closes
+   *  should read gold, not the usual gray Closed, while it's the current
+   *  reality). Omit for rows that should just use the normal status color. */
+  highlight?: boolean;
 }
 
 export interface LeadershipMember {

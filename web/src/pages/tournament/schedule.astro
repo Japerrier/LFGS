@@ -22,7 +22,7 @@ const statusStyles: Record<string, string> = {
           <div class="w-[230px] shrink-0 text-sm text-muted-soft">{d.date}</div>
           <div class="min-w-[180px] flex-1 text-sm text-muted-softer">{d.desc}</div>
           <div
-            class:list={['rounded-full px-3.5 py-1.5 font-display text-xs font-bold', statusStyles[d.status]]}
+            class:list={['rounded-full px-3.5 py-1.5 font-display text-xs font-bold', d.highlight ? statusStyles.Open : statusStyles[d.status]]}
             data-status-pill
             data-active-at={d.activeAt}
             data-status-once-active={d.statusOnceActive}

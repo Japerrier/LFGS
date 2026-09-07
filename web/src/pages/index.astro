@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { teams, teamInitials } from '../data/teams';
 import { externalLinks } from '../data/site';
-import { CURRENT_LFGS_SEASON } from '../lib/season';
+import { CURRENT_LFGS_SEASON, REGISTRATION_OPEN } from '../lib/season';
 
 const quickLinks = [
   { label: 'Schedule', desc: 'Stay up to date with tournament deadlines', href: '/tournament/schedule', shape: 'rounded-sm' },
@@ -24,18 +24,33 @@ const quickLinks = [
     <div class="relative z-2 flex flex-col items-center gap-[22px] px-6">
       <div class="font-display text-[15px] font-semibold uppercase tracking-[4px] text-gold">Overwatch Community Tournament</div>
       <h1 class="font-display text-[76px] font-bold leading-[0.95] tracking-wide text-ink-bright text-shadow-[0_4px_30px_rgba(0,0,0,0.6)]">
-        SEASON 8<br />REGISTRATION OPEN
+        SEASON 8<br />{REGISTRATION_OPEN ? 'REGISTRATION OPEN' : 'REGISTRATION CLOSED'}
       </h1>
       <p class="max-w-[560px] text-lg leading-relaxed text-muted-softer">
-        Emerald &amp; Diamond brackets. Single-elimination playoffs. Prize pool for top 3 teams in each bracket. Join our Discord for updates and announcements.
+        Emerald &amp; Diamond brackets.
+      </p>
+      <p class="max-w-[560px] text-lg leading-relaxed text-muted-softer">
+        Prize pool for top 3 teams in each bracket.
+      </p>
+      <p class="max-w-[560px] text-lg leading-relaxed text-muted-softer">
+        Join our Discord for updates and announcements.
       </p>
       <div class="mt-2 flex flex-wrap justify-center gap-4">
-        <a
-          href="/tournament/register"
-          class="rounded-lg bg-linear-to-br from-gold-grad-from to-gold-grad-to px-[30px] py-[15px] font-display text-[17px] font-bold text-gold-ink shadow-[0_8px_24px_rgba(240,180,41,0.3)]"
-        >
-          Registration
-        </a>
+        {REGISTRATION_OPEN ? (
+          <a
+            href="/tournament/register"
+            class="rounded-lg bg-linear-to-br from-gold-grad-from to-gold-grad-to px-[30px] py-[15px] font-display text-[17px] font-bold text-gold-ink shadow-[0_8px_24px_rgba(240,180,41,0.3)]"
+          >
+            Registration
+          </a>
+        ) : (
+          <span
+            class="cursor-not-allowed rounded-lg bg-white/6 px-[30px] py-[15px] font-display text-[17px] font-bold text-muted"
+            aria-disabled="true"
+          >
+            Registration Closed
+          </span>
+        )}
       </div>
     </div>
   </section>

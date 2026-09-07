@@ -11,6 +11,14 @@ export const CURRENT_LFGS_SEASON_COMPLETE = false;
 
 export const LATEST_COMPLETE_SEASON = CURRENT_LFGS_SEASON_COMPLETE ? CURRENT_LFGS_SEASON : CURRENT_LFGS_SEASON - 1;
 
+// Manual on/off switch for team sign-ups. Flip to false to close registration
+// for CURRENT_LFGS_SEASON: this hides/disables the CTA buttons on the home
+// and about pages, swaps the /tournament/register form for a closed message,
+// and flips the "Registration Opens"/"Registration Closes" pills on the
+// schedule page. Like the constants above, this requires a commit + deploy
+// to take effect — there's no runtime toggle.
+export const REGISTRATION_OPEN = false;
+
 // Overwatch's own competitive season — unrelated to CURRENT_LFGS_SEASON
 // above. Blizzard restarted their season numbering under a "YYYY: Season N"
 // convention in 2026, so a bare number is ambiguous: this year's Season 4
