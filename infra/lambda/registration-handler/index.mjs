@@ -358,7 +358,11 @@ async function registerTeam(body) {
     approved: false,
     S3Name: teamS3Name,
     ...(body.logo
-      ? { logoKey: `season-${SEASON}/teams/${teamS3Name}/logo.${EXTENSION_BY_CONTENT_TYPE[body.logo.contentType] ?? 'png'}` }
+      ? {
+          logoKey: `season-${SEASON}/teams/${teamS3Name}/${slugify(body.teamName)}-logo.${
+            EXTENSION_BY_CONTENT_TYPE[body.logo.contentType] ?? 'png'
+          }`,
+        }
       : {}),
   };
 
