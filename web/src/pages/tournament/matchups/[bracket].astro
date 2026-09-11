@@ -10,16 +10,14 @@ export function getStaticPaths() {
 const { bracket: bracketSlug } = Astro.params;
 const bracket = bracketFromSlug(bracketSlug!);
 
-// TODO: update once real per-bracket week counts are known post-registration.
-const emeraldWeekCount = 1;
-const diamondWeekCount = 1;
-const weekCount = bracket === 'Emerald' ? emeraldWeekCount : diamondWeekCount;
+// Both brackets run a 3-week round robin regular season.
+const weekCount = 3;
 const weeks = Array.from({ length: weekCount }, (_, i) => i + 1);
 
 function weekPairingBasis(week: number) {
   return week === 1
     ? 'Week 1 pairings are randomized per the rulebook once registration closes'
-    : `Week ${week} pairings are set by Swiss standings from the prior week`;
+    : `Week ${week} pairings follow the round robin schedule set in week 1`;
 }
 ---
 

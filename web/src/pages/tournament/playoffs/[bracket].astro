@@ -9,6 +9,85 @@ export function getStaticPaths() {
 
 const { bracket: bracketSlug } = Astro.params;
 const bracket = bracketFromSlug(bracketSlug!);
+
+interface Matchup {
+  a: string;
+  b: string;
+  grandFinal?: boolean;
+}
+
+interface Column {
+  title: string;
+  matchups: Matchup[];
+}
+
+// Emerald: all 4 regular-season teams go straight into a 4-team
+// double-elimination bracket. 4 weeks: UB R1, UB Final/LB R1, LB Final, Grand Final.
+const emeraldColumns: Column[] = [
+  {
+    title: 'Week 1',
+    matchups: [
+      { a: 'Seed 1 — TBD', b: 'Seed 4 — TBD' },
+      { a: 'Seed 2 — TBD', b: 'Seed 3 — TBD' },
+    ],
+  },
+  {
+    title: 'Week 2',
+    matchups: [
+      { a: 'TBD', b: 'TBD' },
+      { a: 'TBD', b: 'TBD' },
+    ],
+  },
+  {
+    title: 'Week 3 — Lower Bracket Final',
+    matchups: [{ a: 'TBD', b: 'TBD' }],
+  },
+  {
+    title: 'Week 4 — Grand Final',
+    matchups: [{ a: 'TBD', b: 'TBD', grandFinal: true }],
+  },
+];
+
+// Diamond: Bracket A and Bracket B each seed 4 teams. Week 1 is a play-in
+// between each group's 2nd and 3rd seed; the winners join both groups' 1st
+// seeds (byes) to form the 4-team double-elimination bracket for weeks 2-5.
+const diamondColumns: Column[] = [
+  {
+    title: 'Week 1 — Play-In',
+    matchups: [
+      { a: 'Bracket A Seed 2 — TBD', b: 'Bracket A Seed 3 — TBD' },
+      { a: 'Bracket B Seed 2 — TBD', b: 'Bracket B Seed 3 — TBD' },
+    ],
+  },
+  {
+    title: 'Week 2',
+    matchups: [
+      { a: 'Bracket A Seed 1 — TBD', b: 'Bracket B Play-In Winner — TBD' },
+      { a: 'Bracket B Seed 1 — TBD', b: 'Bracket A Play-In Winner — TBD' },
+    ],
+  },
+  {
+    title: 'Week 3',
+    matchups: [
+      { a: 'TBD', b: 'TBD' },
+      { a: 'TBD', b: 'TBD' },
+    ],
+  },
+  {
+    title: 'Week 4 — Lower Bracket Final',
+    matchups: [{ a: 'TBD', b: 'TBD' }],
+  },
+  {
+    title: 'Week 5 — Grand Final',
+    matchups: [{ a: 'TBD', b: 'TBD', grandFinal: true }],
+  },
+];
+
+const columns = bracket === 'Emerald' ? emeraldColumns : diamondColumns;
+const bannerText =
+  bracket === 'Emerald'
+    ? 'Top 4 double-elimination. Seeds populate once the Emerald regular season concludes.'
+    : "Bracket A & B top 4 double-elimination. Seeds 2 & 3 from each group play in on week 1. Winners join both groups' seed 1s.";
 ---
 
 <Layout title={`${bracket} Playoffs`}>
@@ -16,56 +95,29 @@ const bracket = bracketFromSlug(bracketSlug!);
     <TournamentNav activeTab="playoffs" bracket={bracket} />
 
     <div class="mb-6 rounded-lg border border-gold/20 bg-gold/8 px-4 py-3 text-[13.5px] text-muted">
-      Single-elimination Final 8. Seeds populate once the {bracket} regular season concludes.
+      {bannerText}
     </div>
 
-    <div class="grid grid-cols-1 gap-8 sm:grid-cols-3">
-      <div class="flex flex-col gap-5">
-        <div class="font-display text-[13px] font-bold uppercase tracking-wide text-gold">Quarterfinals</div>
-        <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5">
-          <div class="text-sm text-muted-softer">Seed 1 — TBD</div>
-          <div class="text-xs text-faint">vs</div>
-          <div class="text-sm text-muted-softer">Seed 8 — TBD</div>
+    <div class="grid grid-cols-1 gap-8 overflow-x-auto sm:grid-cols-4" class:list={{ 'lg:grid-cols-5': bracket === 'Diamond' }}>
+      {columns.map((col) => (
+        <div class="flex flex-col gap-5">
+          <div class="font-display text-[13px] font-bold uppercase tracking-wide text-gold">{col.title}</div>
+          {col.matchups.map((m) => (
+            <div
+              class:list={[
+                'flex flex-col gap-2 rounded-lg px-4 py-3.5',
+                m.grandFinal
+                  ? 'gap-2.5 border-[1.5px] border-gold/40 bg-linear-to-br from-gold/16 to-bg-raised px-[18px] py-[18px]'
+                  : 'border border-gold/18 bg-bg-raised',
+              ]}
+            >
+              <div class:list={[m.grandFinal ? 'text-[15px] font-semibold text-ink' : 'text-sm text-muted-softer']}>{m.a}</div>
+              <div class="text-xs text-faint">vs</div>
+              <div class:list={[m.grandFinal ? 'text-[15px] font-semibold text-ink' : 'text-sm text-muted-softer']}>{m.b}</div>
+            </div>
+          ))}
         </div>
-        <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5">
-          <div class="text-sm text-muted-softer">Seed 4 — TBD</div>
-          <div class="text-xs text-faint">vs</div>
-          <div class="text-sm text-muted-softer">Seed 5 — TBD</div>
-        </div>
-        <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5">
-          <div class="text-sm text-muted-softer">Seed 2 — TBD</div>
-          <div class="text-xs text-faint">vs</div>
-          <div class="text-sm text-muted-softer">Seed 7 — TBD</div>
-        </div>
-        <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5">
-          <div class="text-sm text-muted-softer">Seed 3 — TBD</div>
-          <div class="text-xs text-faint">vs</div>
-          <div class="text-sm text-muted-softer">Seed 6 — TBD</div>
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-5">
-        <div class="font-display text-[13px] font-bold uppercase tracking-wide text-gold">Semifinals</div>
-        <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5">
-          <div class="text-sm text-muted-softer">TBD</div>
-          <div class="text-xs text-faint">vs</div>
-          <div class="text-sm text-muted-softer">TBD</div>
-        </div>
-        <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5">
-          <div class="text-sm text-muted-softer">TBD</div>
-          <div class="text-xs text-faint">vs</div>
-          <div class="text-sm text-muted-softer">TBD</div>
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-5">
-        <div class="font-display text-[13px] font-bold uppercase tracking-wide text-gold">Grand Final</div>
-        <div class="flex flex-col gap-2.5 rounded-lg border-[1.5px] border-gold/40 bg-linear-to-br from-gold/16 to-bg-raised px-[18px] py-[18px]">
-          <div class="text-[15px] font-semibold text-ink">TBD</div>
-          <div class="text-xs text-faint">vs</div>
-          <div class="text-[15px] font-semibold text-ink">TBD</div>
-        </div>
-      </div>
+      ))}
     </div>
   </div>
 </Layout>

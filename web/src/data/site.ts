@@ -40,7 +40,7 @@ export const keyDates: KeyDate[] = [
   {
     label: 'Regular Season Begins',
     date: 'Mon, Sep 14, 2026',
-    desc: 'Swiss-format season, 1 official match per week',
+    desc: 'Round robin season — 1 official match per week',
     status: 'Upcoming',
     activeAt: '2026-09-14T00:00:00',
     // No great single word for "the season is now underway" in this status
@@ -49,12 +49,12 @@ export const keyDates: KeyDate[] = [
     statusOnceActive: 'Closed',
   },
   {
-    label: 'Playoffs',
-    date: 'TBD by team count',
-    desc: 'Single-elimination Final 8, quarterfinals through grand final',
-    status: 'TBD',
-    // No real date to compare against — always TBD, no activeAt needed.
-    // TODO: Add Playoffs start date once registration closes and we know how many teams are in each bracket.
+    label: 'Playoffs Begin',
+    date: 'Mon, Oct 5, 2026',
+    desc: 'Top 4 double-elimination per bracket (Diamond seeds 2 & 3 play-in first)',
+    status: 'Upcoming',
+    activeAt: '2026-10-05T00:00:00',
+    statusOnceActive: 'Closed',
   },
 ];
 
