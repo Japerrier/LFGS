@@ -19,13 +19,14 @@ export const keyDates: KeyDate[] = [
     label: 'Registration Opens',
     date: 'Sat, Jul 11, 2026',
     desc: 'Team sign-ups begin for Emerald & Diamond',
-    // Driven off REGISTRATION_OPEN (lib/season.ts) instead of an activeAt
-    // date — sign-ups close on a staff decision, not a fixed clock, so no
-    // client-side re-derivation here. 'Closed' stands in for "this window
-    // has passed," same convention as Regular Season Begins below.
-    status: REGISTRATION_OPEN ? 'Open' : 'Closed',
+    // Text always reads 'Open' — this row describes the date registration
+    // opened, not whether it's still open. Driven off REGISTRATION_OPEN
+    // (lib/season.ts) instead of an activeAt date — sign-ups close on a
+    // staff decision, not a fixed clock, so no client-side re-derivation here.
+    status: 'Open',
     // Gold only while registration is actually open — once closed, this
-    // row is history and Registration Closes below becomes the highlighted one.
+    // row is history and Registration Closes below becomes the highlighted
+    // one. The pill dims to grey (see schedule.astro) without changing its text.
     highlight: REGISTRATION_OPEN,
   },
   {
