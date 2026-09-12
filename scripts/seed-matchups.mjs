@@ -62,7 +62,12 @@ async function seedMatchups() {
       week: m.week,
       bracket: m.bracket,
       team1Id,
+      // Denormalized alongside team1Id/team2Id purely so the row is readable
+      // in the DynamoDB console — the site itself resolves names from
+      // teamId at build time (web/src/data/matchups.ts) and ignores these.
+      team1Name: m.team1Name,
       team2Id,
+      team2Name: m.team2Name,
     };
     if (m.group) item.group = m.group;
     return { PutRequest: { Item: item } };
