@@ -2,6 +2,9 @@
 import Layout from '../../../layouts/Layout.astro';
 import TournamentNav from '../../../components/TournamentNav.astro';
 import { BRACKETS, bracketFromSlug, bracketToSlug } from '../../../lib/brackets';
+import { getMatchupsByBracket } from '../../../data/matchups';
+import MatchupRow from '../../../components/MatchupRow.astro';
+import type { Matchup } from '../../../data/types';
 
 export function getStaticPaths() {
   return BRACKETS.map((b) => ({ params: { bracket: bracketToSlug(b) } }));
@@ -10,14 +13,16 @@ export function getStaticPaths() {
 const { bracket: bracketSlug } = Astro.params;
 const bracket = bracketFromSlug(bracketSlug!);
 
-// Both brackets run a 3-week round robin regular season.
-const weekCount = 3;
-const weeks = Array.from({ length: weekCount }, (_, i) => i + 1);
+const bracketMatchups = getMatchupsByBracket(bracket);
+const weeks = [...new Set(bracketMatchups.map((m) => m.week))].sort((a, b) => a - b);
 
-function weekPairingBasis(week: number) {
-  return week === 1
-    ? 'Week 1 pairings are randomized per the rulebook once registration closes'
-    : `Week ${week} pairings follow the round robin schedule set in week 1`;
+function matchupsForWeek(week: number): Matchup[] {
+  return bracketMatchups.filter((m) => m.week === week);
+}
+
+function groupsForWeek(week: number): string[] {
+  const groups = new Set(matchupsForWeek(week).map((m) => m.group).filter((g): g is 'A' | 'B' => Boolean(g)));
+  return [...groups].sort();
 }
 ---
 
@@ -25,29 +30,61 @@ function weekPairingBasis(week: number) {
   <div class="content-width mx-auto px-8 pb-20 pt-10">
     <TournamentNav activeTab="matchups" bracket={bracket} />
 
-    <div class="mb-6 flex flex-wrap gap-2 rounded-[10px] border border-gold/15 bg-bg-raised p-[5px]" data-week-tabs>
-      {weeks.map((w) => (
-        <button
-          type="button"
-          data-week-tab={w}
-          class:list={[
-            'rounded-[7px] px-4 py-2 font-display text-sm font-bold',
-            w === 1 ? 'bg-gold text-bg' : 'text-muted-softer hover:text-ink',
-          ]}
-        >
-          Week {w}
-        </button>
-      ))}
-    </div>
-
-    {weeks.map((w) => (
-      <div data-week-panel={w} class:list={['rounded-xl border border-gold/12 bg-bg-raised p-8 text-center', w !== 1 && 'hidden']}>
+    {weeks.length === 0 ? (
+      <div class="rounded-xl border border-gold/12 bg-bg-raised p-8 text-center">
         <div class="mb-2 font-display text-lg font-bold text-ink">Matchups TBD</div>
         <div class="text-sm text-muted">
-          {weekPairingBasis(w)}. Check back once the {bracket} regular season is underway.
+          Week 1 pairings are randomized per the rulebook once registration closes. Check back once the {bracket} regular
+          season is underway.
         </div>
       </div>
-    ))}
+    ) : (
+      <>
+        <div class="mb-6 flex flex-wrap gap-2 rounded-[10px] border border-gold/15 bg-bg-raised p-[5px]" data-week-tabs>
+          {weeks.map((w, i) => (
+            <button
+              type="button"
+              data-week-tab={w}
+              class:list={[
+                'rounded-[7px] px-4 py-2 font-display text-sm font-bold',
+                i === 0 ? 'bg-gold text-bg' : 'text-muted-softer hover:text-ink',
+              ]}
+            >
+              Week {w}
+            </button>
+          ))}
+        </div>
+
+        {weeks.map((w, i) => {
+          const weekMatchups = matchupsForWeek(w);
+          const groups = groupsForWeek(w);
+          return (
+            <div data-week-panel={w} class:list={['flex flex-col gap-6', i !== 0 && 'hidden']}>
+              {groups.length > 0
+                ? groups.map((g) => (
+                    <div>
+                      <div class="mb-3 font-display text-[13px] font-bold uppercase tracking-wide text-gold">Bracket {g}</div>
+                      <div class="flex flex-col gap-3">
+                        {weekMatchups
+                          .filter((m) => m.group === g)
+                          .map((m) => (
+                            <MatchupRow team1={m.team1} team2={m.team2} />
+                          ))}
+                      </div>
+                    </div>
+                  ))
+                : (
+                    <div class="flex flex-col gap-3">
+                      {weekMatchups.map((m) => (
+                        <MatchupRow team1={m.team1} team2={m.team2} />
+                      ))}
+                    </div>
+                  )}
+            </div>
+          );
+        })}
+      </>
+    )}
   </div>
 </Layout>
 

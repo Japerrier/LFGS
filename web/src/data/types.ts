@@ -44,6 +44,17 @@ export interface TeamMember {
   seasonScreenshotImageKeys?: string[];
 }
 
+export interface Matchup {
+  matchId: string;
+  season: number;
+  week: number;
+  bracket: Bracket;
+  /** Diamond's regular season is split into two round-robin groups; Emerald has none. */
+  group?: 'A' | 'B';
+  team1: Team;
+  team2: Team;
+}
+
 export type KeyDateStatus = 'Open' | 'Closed' | 'Upcoming' | 'TBD';
 
 export interface KeyDate {
