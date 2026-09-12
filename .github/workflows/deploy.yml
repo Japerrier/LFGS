@@ -8,6 +8,7 @@ name: Deploy
 on:
   push:
     branches: [main]
+    paths: ["web/**"]
   repository_dispatch:
     types: [data-updated]
   workflow_dispatch:
