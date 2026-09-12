@@ -5,7 +5,8 @@
 //
 // For members with memberType "Player", also creates that player's media
 // folder inside their team's S3 folder — coaches/managers/other staff don't
-// get one.
+// get one — and computes their seasonScreenshotImageKeys (the expected S3
+// keys, not uploaded here — actual images are added manually later).
 //
 // Requires AWS credentials configured locally (e.g. `aws configure` or an
 // AWS_PROFILE env var) with read access to Teams, write access to
@@ -17,7 +18,8 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, ScanCommand, BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { teamMembers } from './team-members-seed.data.mjs';
+import { teamMembers, IMAGE_FILE_EXTENSION } from './team-members-seed.data.mjs';
+import { CURRENT_OW_SEASON_NUMBER } from '../web/src/lib/season.ts';
 
 const TEAMS_TABLE = 'Teams';
 const TEAM_MEMBERS_TABLE = 'Team_Members';
@@ -66,7 +68,9 @@ async function seedTeamMembers() {
   const prepared = teamMembers.map((member) => {
     const memberId = `memberId_${crypto.randomUUID()}`;
     const { season, S3Name: teamS3Name } = teamInfoByTeamId.get(member.teamId);
-    return { ...member, memberId, season, teamS3Name };
+    // The display name is just the BattleTag with the #discriminator stripped.
+    const name = member.battleNet.split('#')[0];
+    return { ...member, memberId, season, name, teamS3Name };
   });
 
   for (const member of prepared) {
@@ -78,9 +82,15 @@ async function seedTeamMembers() {
     // SDK's "Stream of unknown length" warning for bodyless PutObject calls.
     await s3Client.send(new PutObjectCommand({ Bucket: MEDIA_BUCKET, Key: folderKey, Body: Buffer.alloc(0) }));
     console.log(`Created s3://${MEDIA_BUCKET}/${folderKey}`);
+
+    // Most recent Overwatch season first, descending.
+    const extension = member.imageFileExtension ?? IMAGE_FILE_EXTENSION;
+    member.seasonScreenshotImageKeys = [0, 1, 2].map(
+      (seasonsAgo) => `${folderKey}${member.name}_S${CURRENT_OW_SEASON_NUMBER - seasonsAgo}.${extension}`
+    );
   }
 
-  const items = prepared.map(({ teamS3Name, ...member }) => ({
+  const items = prepared.map(({ teamS3Name, imageFileExtension, ...member }) => ({
     PutRequest: { Item: member },
   }));
 
