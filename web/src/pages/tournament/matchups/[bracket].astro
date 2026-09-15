@@ -68,7 +68,7 @@ function groupsForWeek(week: number): string[] {
                         {weekMatchups
                           .filter((m) => m.group === g)
                           .map((m) => (
-                            <MatchupRow team1={m.team1} team2={m.team2} />
+                            <MatchupRow team1={m.team1} team2={m.team2} matchTime={m.matchTime} />
                           ))}
                       </div>
                     </div>
@@ -76,7 +76,7 @@ function groupsForWeek(week: number): string[] {
                 : (
                     <div class="flex flex-col gap-3">
                       {weekMatchups.map((m) => (
-                        <MatchupRow team1={m.team1} team2={m.team2} />
+                        <MatchupRow team1={m.team1} team2={m.team2} matchTime={m.matchTime} />
                       ))}
                     </div>
                   )}

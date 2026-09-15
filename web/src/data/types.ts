@@ -53,6 +53,9 @@ export interface Matchup {
   group?: 'A' | 'B';
   team1: Team;
   team2: Team;
+  /** Eastern wall-clock timestamp ('YYYY-MM-DDTHH:mm:ss') this match is scheduled
+   *  for — same convention as KeyDate.activeAt. Omit until a time is confirmed. */
+  matchTime?: string;
 }
 
 export type KeyDateStatus = 'Open' | 'Closed' | 'Upcoming' | 'TBD' | 'In Progress';

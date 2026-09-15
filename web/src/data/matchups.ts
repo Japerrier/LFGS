@@ -29,6 +29,7 @@ export const matchups: Matchup[] = (Items ?? []).map((item) => ({
   group: item.group as 'A' | 'B' | undefined,
   team1: resolveTeam(item.team1Id),
   team2: resolveTeam(item.team2Id),
+  matchTime: item.matchTime as string | undefined,
 }));
 
 // Weeks only show up on the site once a matchup row exists for them — there's
