@@ -1,0 +1,123 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import TournamentNav from '../../../components/TournamentNav.astro';
+import BracketRedirect from '../../../components/BracketRedirect.astro';
+import { BRACKETS, bracketFromSlug, bracketToSlug } from '../../../lib/brackets';
+import { getMatchupsByBracket } from '../../../data/matchups';
+import MatchupRow from '../../../components/MatchupRow.astro';
+import type { Matchup } from '../../../data/types';
+
+export function getStaticPaths() {
+  return [
+    // No bracket in the URL (e.g. a homepage quick-access link) — redirect
+    // client-side to whichever bracket the visitor last had selected.
+    { params: { bracket: undefined } },
+    ...BRACKETS.map((b) => ({ params: { bracket: bracketToSlug(b) } })),
+  ];
+}
+
+const { bracket: bracketSlug } = Astro.params;
+const bracket = bracketSlug ? bracketFromSlug(bracketSlug) : undefined;
+
+const bracketMatchups = bracket ? getMatchupsByBracket(bracket) : [];
+const weeks = [...new Set(bracketMatchups.map((m) => m.week))].sort((a, b) => a - b);
+
+function matchupsForWeek(week: number): Matchup[] {
+  return bracketMatchups.filter((m) => m.week === week);
+}
+
+function groupsForWeek(week: number): string[] {
+  const groups = new Set(matchupsForWeek(week).map((m) => m.group).filter((g): g is 'A' | 'B' => Boolean(g)));
+  return [...groups].sort();
+}
+---
+
+<Layout title={bracket ? `${bracket} Matchups` : 'Matchups'}>
+  <div class="content-width mx-auto px-8 pb-20 pt-10">
+    {!bracket ? (
+      <BracketRedirect tab="matchups" />
+    ) : (
+      <>
+        <TournamentNav activeTab="matchups" bracket={bracket} />
+
+        {weeks.length === 0 ? (
+          <div class="rounded-xl border border-gold/12 bg-bg-raised p-8 text-center">
+            <div class="mb-2 font-display text-lg font-bold text-ink">Matchups TBD</div>
+            <div class="text-sm text-muted">
+              Week 1 pairings are randomized per the rulebook once registration closes. Check back once the {bracket} regular
+              season is underway.
+            </div>
+          </div>
+        ) : (
+          <>
+            <div class="mb-6 flex flex-wrap gap-2 rounded-[10px] border border-gold/15 bg-bg-raised p-[5px]" data-week-tabs>
+              {weeks.map((w, i) => (
+                <button
+                  type="button"
+                  data-week-tab={w}
+                  class:list={[
+                    'rounded-[7px] px-4 py-2 font-display text-sm font-bold',
+                    i === 0 ? 'bg-gold text-bg' : 'text-muted-softer hover:text-ink',
+                  ]}
+                >
+                  Week {w}
+                </button>
+              ))}
+            </div>
+
+            {weeks.map((w, i) => {
+              const weekMatchups = matchupsForWeek(w);
+              const groups = groupsForWeek(w);
+              return (
+                <div data-week-panel={w} class:list={['flex flex-col gap-6', i !== 0 && 'hidden']}>
+                  {groups.length > 0
+                    ? groups.map((g) => (
+                        <div>
+                          <div class="mb-3 font-display text-[13px] font-bold uppercase tracking-wide text-gold">Bracket {g}</div>
+                          <div class="flex flex-col gap-3">
+                            {weekMatchups
+                              .filter((m) => m.group === g)
+                              .map((m) => (
+                                <MatchupRow team1={m.team1} team2={m.team2} matchTime={m.matchTime} />
+                              ))}
+                          </div>
+                        </div>
+                      ))
+                    : (
+                        <div class="flex flex-col gap-3">
+                          {weekMatchups.map((m) => (
+                            <MatchupRow team1={m.team1} team2={m.team2} matchTime={m.matchTime} />
+                          ))}
+                        </div>
+                      )}
+                </div>
+              );
+            })}
+          </>
+        )}
+      </>
+    )}
+  </div>
+</Layout>
+
+<script>
+  const tabs = document.querySelector('[data-week-tabs]');
+
+  tabs?.addEventListener('click', (event) => {
+    const button = (event.target as Element).closest('[data-week-tab]');
+    if (!button) return;
+    const week = button.getAttribute('data-week-tab');
+
+    tabs.querySelectorAll('[data-week-tab]').forEach((tab) => {
+      const active = tab === button;
+      tab.classList.toggle('bg-gold', active);
+      tab.classList.toggle('text-bg', active);
+      tab.classList.toggle('text-muted-softer', !active);
+      tab.classList.toggle('hover:text-ink', !active);
+    });
+
+    document.querySelectorAll('[data-week-panel]').forEach((panel) => {
+      panel.classList.toggle('hidden', panel.getAttribute('data-week-panel') !== week);
+    });
+  });
+</script>

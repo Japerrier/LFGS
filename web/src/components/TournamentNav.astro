@@ -69,12 +69,15 @@ const tabs: { key: typeof activeTab; label: string }[] = [
   )}
 </div>
 
-<div class="mb-8 flex flex-wrap gap-1.5 border-b border-gold/15">
+<div class="mb-8 flex flex-wrap gap-1.5 border-b border-gold/15" id="tournament-nav-tabs">
   {tabs.map((tab) => {
     const active = tab.key === activeTab;
+    const bracketScoped = tab.key !== 'schedule';
     return (
       <a
         href={tabHref(tab.key)}
+        data-tab={tab.key}
+        data-bracket-scoped={bracketScoped}
         class:list={[
           '-mb-px px-[18px] py-3 font-display text-[15px] font-semibold',
           active ? 'border-b-2 border-gold text-ink' : 'border-b-2 border-transparent text-muted',
@@ -85,3 +88,21 @@ const tabs: { key: typeof activeTab; label: string }[] = [
     );
   })}
 </div>
+
+<script define:vars={{ isBracketScoped, activeBracketSlug }}>
+  // Bracket selection lives in the URL path, and this is a fully static,
+  // multi-page site (no client-side router), so remembering the last
+  // bracket across tab navigations has to go through localStorage.
+  const STORAGE_KEY = 'lfgs:tournament-bracket';
+
+  if (isBracketScoped) {
+    localStorage.setItem(STORAGE_KEY, activeBracketSlug);
+  }
+
+  const rememberedBracket = isBracketScoped ? activeBracketSlug : localStorage.getItem(STORAGE_KEY) || activeBracketSlug;
+
+  document.querySelectorAll('#tournament-nav-tabs a[data-bracket-scoped="true"]').forEach((link) => {
+    const tab = link.getAttribute('data-tab');
+    link.setAttribute('href', `/tournament/${tab}/${rememberedBracket}`);
+  });
+</script>

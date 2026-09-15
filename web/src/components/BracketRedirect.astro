@@ -1,0 +1,23 @@
+---
+// Astro's static `redirects` config can only point to a fixed URL at build
+// time, so it can't factor in the visitor's remembered bracket. This
+// component fills that gap: it forwards to the last bracket the visitor
+// picked (see TournamentNav.astro), defaulting to Diamond.
+interface Props {
+  tab: 'teams' | 'matchups' | 'standings';
+}
+
+const { tab } = Astro.props;
+---
+
+<p class="text-sm text-muted">Redirecting…</p>
+
+<script define:vars={{ tab }}>
+  const STORAGE_KEY = 'lfgs:tournament-bracket';
+  const bracket = localStorage.getItem(STORAGE_KEY) || 'diamond';
+  window.location.replace(`/tournament/${tab}/${bracket}`);
+</script>
+
+<noscript>
+  <meta http-equiv="refresh" content={`0; url=/tournament/${tab}/diamond`} />
+</noscript>
