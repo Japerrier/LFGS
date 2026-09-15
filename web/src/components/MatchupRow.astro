@@ -24,8 +24,8 @@ const { team1, team2, matchTime } = Astro.props;
     <span class="truncate">{team1.name}</span>
   </a>
   <div class="flex flex-col items-center gap-1">
-    <span class="text-sm text-faint">vs</span>
-    {matchTime && <span class="whitespace-nowrap text-[11px] text-muted-softer">{formatMatchTime(matchTime)}</span>}
+    <span class="text-md text-faint">vs</span>
+    {matchTime && <span class="whitespace-nowrap text-sm text-muted-softer">{formatMatchTime(matchTime)}</span>}
   </div>
   <a
     href={`/teams/${team2.slug}`}
