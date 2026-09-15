@@ -55,7 +55,7 @@ export interface Matchup {
   team2: Team;
 }
 
-export type KeyDateStatus = 'Open' | 'Closed' | 'Upcoming' | 'TBD';
+export type KeyDateStatus = 'Open' | 'Closed' | 'Upcoming' | 'TBD' | 'In Progress';
 
 export interface KeyDate {
   label: string;

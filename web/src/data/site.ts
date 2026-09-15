@@ -34,20 +34,22 @@ export const keyDates: KeyDate[] = [
     date: 'Sun, Sep 6, 2026 · 11:59 PM EST',
     desc: 'Last chance to lock in a roster',
     status: REGISTRATION_OPEN ? 'Upcoming' : 'Closed',
-    // Gold once registration has actually closed, so this pill (not the
-    // generic gray "Closed" styling) signals it's the current live state.
-    highlight: !REGISTRATION_OPEN,
+    // Was gold while registration closing was the current live state; now
+    // that the regular season has begun, Regular Season Begins below is the
+    // active row instead, so this one goes back to the plain gray Closed look.
+    highlight: false,
   },
   {
     label: 'Regular Season Begins',
     date: 'Mon, Sep 14, 2026',
     desc: 'Round robin season — 1 official match per week',
-    status: 'Upcoming',
+    status: 'In Progress',
     activeAt: '2026-09-14T00:00:00',
-    // No great single word for "the season is now underway" in this status
-    // set — Closed is standing in for "this date has passed." Easy one-line
-    // change if you'd rather it say something else once Sep 14 arrives.
-    statusOnceActive: 'Closed',
+    // Gold + "In Progress" now that this date has arrived — the client
+    // script re-derives this from activeAt on load, this is just the
+    // build-time fallback kept in sync with that.
+    highlight: true,
+    statusOnceActive: 'In Progress',
   },
   {
     label: 'Playoffs Begin',
