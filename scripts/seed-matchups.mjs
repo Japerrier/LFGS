@@ -10,6 +10,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, BatchWriteCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { matchups } from './matchups-seed.data.mjs';
+import { CURRENT_LFGS_SEASON } from '../web/src/lib/season.ts';
 
 const MATCHUPS_TABLE = 'Matchups';
 const TEAMS_TABLE = 'Teams';
@@ -45,20 +46,18 @@ async function seedMatchups() {
     return;
   }
 
-  const seasons = [...new Set(matchups.map((m) => m.season))];
-  const teamIdsBySeason = new Map(await Promise.all(seasons.map(async (season) => [season, await teamIdsByName(season)])));
+  const teamIds = await teamIdsByName(CURRENT_LFGS_SEASON);
 
   const items = matchups.map((m) => {
-    const teamIds = teamIdsBySeason.get(m.season);
     const team1Id = teamIds.get(m.team1Name);
     const team2Id = teamIds.get(m.team2Name);
-    if (!team1Id) throw new Error(`No team named "${m.team1Name}" found in Teams for season ${m.season}`);
-    if (!team2Id) throw new Error(`No team named "${m.team2Name}" found in Teams for season ${m.season}`);
+    if (!team1Id) throw new Error(`No team named "${m.team1Name}" found in Teams for season ${CURRENT_LFGS_SEASON}`);
+    if (!team2Id) throw new Error(`No team named "${m.team2Name}" found in Teams for season ${CURRENT_LFGS_SEASON}`);
 
     const matchId = `matchId_${crypto.randomUUID()}`;
     const item = {
       matchId,
-      season: m.season,
+      season: CURRENT_LFGS_SEASON,
       week: m.week,
       bracket: m.bracket,
       team1Id,
