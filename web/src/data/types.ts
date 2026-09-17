@@ -44,6 +44,44 @@ export interface TeamMember {
   seasonScreenshotImageKeys?: string[];
 }
 
+export interface MapResult {
+  matchDataId: string;
+  season: number;
+  matchId: string;
+  mapNumber: number;
+  mapName: string;
+  /** Rounds/points won on this map (e.g. Control 2-1) — not a win/loss flag.
+   *  The map's winner (or draw) is derived by comparing these, same as
+   *  Team.slug is derived rather than stored. Also what "map differential"
+   *  tiebreaker seeding is computed from. */
+  team1Score: number;
+  team2Score: number;
+}
+
+export interface PlayerMapStat {
+  matchDataId: string;
+  season: number;
+  matchId: string;
+  mapNumber: number;
+  /** Derived from the player's BattleTag with the #discriminator stripped —
+   *  same convention as TeamMember.name. The raw BattleTag is never exposed
+   *  to the site, same privacy reasoning as Team_Members. */
+  name: string;
+  /** Present only when this player's BattleTag matched a registered
+   *  Team_Members record — absent for an unregistered outside ringer. */
+  memberId?: string;
+  /** Team they played FOR on this specific map — not necessarily their
+   *  registered team, since a ringer can fill in for a different team. */
+  teamId: string;
+  ringer?: boolean;
+  eliminations: number;
+  assists: number;
+  deaths: number;
+  damage: number;
+  healing: number;
+  mitigation: number;
+}
+
 export interface Matchup {
   matchId: string;
   season: number;
