@@ -1,14 +1,20 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import TournamentNav from '../../../components/TournamentNav.astro';
+import BracketRedirect from '../../../components/BracketRedirect.astro';
 import { BRACKETS, bracketFromSlug, bracketToSlug } from '../../../lib/brackets';
 
 export function getStaticPaths() {
-  return BRACKETS.map((b) => ({ params: { bracket: bracketToSlug(b) } }));
+  return [
+    // No bracket in the URL (e.g. a homepage quick-access link) — redirect
+    // client-side to whichever bracket the visitor last had selected.
+    { params: { bracket: undefined } },
+    ...BRACKETS.map((b) => ({ params: { bracket: bracketToSlug(b) } })),
+  ];
 }
 
 const { bracket: bracketSlug } = Astro.params;
-const bracket = bracketFromSlug(bracketSlug!);
+const bracket = bracketSlug ? bracketFromSlug(bracketSlug) : undefined;
 
 interface Matchup {
   a: string;
@@ -90,34 +96,40 @@ const bannerText =
     : "Bracket A & B top 4 double-elimination. Seeds 2 & 3 from each group play in on week 1. Winners join both groups' seed 1s.";
 ---
 
-<Layout title={`${bracket} Playoffs`}>
+<Layout title={bracket ? `${bracket} Playoffs` : 'Playoffs'}>
   <div class="content-width mx-auto px-8 pb-20 pt-10">
-    <TournamentNav activeTab="playoffs" bracket={bracket} />
+    {!bracket ? (
+      <BracketRedirect tab="playoffs" />
+    ) : (
+      <>
+        <TournamentNav activeTab="playoffs" bracket={bracket} />
 
-    <div class="mb-6 rounded-lg border border-gold/20 bg-gold/8 px-4 py-3 text-[13.5px] text-muted">
-      {bannerText}
-    </div>
+        <div class="mb-6 rounded-lg border border-gold/20 bg-gold/8 px-4 py-3 text-[13.5px] text-muted">
+          {bannerText}
+        </div>
 
-    <div class="grid grid-cols-1 gap-8 overflow-x-auto sm:grid-cols-4" class:list={{ 'lg:grid-cols-5': bracket === 'Diamond' }}>
-      {columns.map((col) => (
-        <div class="flex flex-col gap-5">
-          <div class="font-display text-[13px] font-bold uppercase tracking-wide text-gold">{col.title}</div>
-          {col.matchups.map((m) => (
-            <div
-              class:list={[
-                'flex flex-col gap-2 rounded-lg px-4 py-3.5',
-                m.grandFinal
-                  ? 'gap-2.5 border-[1.5px] border-gold/40 bg-linear-to-br from-gold/16 to-bg-raised px-[18px] py-[18px]'
-                  : 'border border-gold/18 bg-bg-raised',
-              ]}
-            >
-              <div class:list={[m.grandFinal ? 'text-[15px] font-semibold text-ink' : 'text-sm text-muted-softer']}>{m.a}</div>
-              <div class="text-xs text-faint">vs</div>
-              <div class:list={[m.grandFinal ? 'text-[15px] font-semibold text-ink' : 'text-sm text-muted-softer']}>{m.b}</div>
+        <div class="grid grid-cols-1 gap-8 overflow-x-auto sm:grid-cols-4" class:list={{ 'lg:grid-cols-5': bracket === 'Diamond' }}>
+          {columns.map((col) => (
+            <div class="flex flex-col gap-5">
+              <div class="font-display text-[13px] font-bold uppercase tracking-wide text-gold">{col.title}</div>
+              {col.matchups.map((m) => (
+                <div
+                  class:list={[
+                    'flex flex-col gap-2 rounded-lg px-4 py-3.5',
+                    m.grandFinal
+                      ? 'gap-2.5 border-[1.5px] border-gold/40 bg-linear-to-br from-gold/16 to-bg-raised px-[18px] py-[18px]'
+                      : 'border border-gold/18 bg-bg-raised',
+                  ]}
+                >
+                  <div class:list={[m.grandFinal ? 'text-[15px] font-semibold text-ink' : 'text-sm text-muted-softer']}>{m.a}</div>
+                  <div class="text-xs text-faint">vs</div>
+                  <div class:list={[m.grandFinal ? 'text-[15px] font-semibold text-ink' : 'text-sm text-muted-softer']}>{m.b}</div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
-      ))}
-    </div>
+      </>
+    )}
   </div>
 </Layout>
