@@ -54,8 +54,10 @@ test('Load the rulebook page', async ({ page }) => {
 
 test('Load the Hall of Fame page', async ({ page }) => {
     await page.goto('/hall-of-fame');
+    const defaultSeason = page.url().match(/\/hall-of-fame\/(\d+)/)?.[1];
+    const defaultSeasonTab = page.locator(`main a[href="/hall-of-fame/${defaultSeason}"]`);
+    await expect(defaultSeasonTab).toHaveClass(/border-gold/);
     await expect(page.locator('main h1')).toHaveText('Hall of Fame');
-    // TODO: Add assertion for default tab within hall of fame
 })
 
 test('Load the About page', async ({ page }) => {
