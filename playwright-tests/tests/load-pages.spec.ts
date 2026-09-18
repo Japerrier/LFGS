@@ -1,10 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-})
-
 test('Load the home page', async ({ page }) => {
+    await page.goto('/');
     await expect(page.getByText('Overwatch Community Tournament')).toBeVisible();
 })
 
