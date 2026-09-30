@@ -101,15 +101,13 @@ function groupsForWeek(week: number): string[] {
 </Layout>
 
 <script>
+  // The selected week lives in the URL hash (#week-N) so it survives the
+  // full page load when toggling Emerald/Diamond, and so a week is linkable.
   const tabs = document.querySelector('[data-week-tabs]');
 
-  tabs?.addEventListener('click', (event) => {
-    const button = (event.target as Element).closest('[data-week-tab]');
-    if (!button) return;
-    const week = button.getAttribute('data-week-tab');
-
-    tabs.querySelectorAll('[data-week-tab]').forEach((tab) => {
-      const active = tab === button;
+  function activateWeek(week: string) {
+    tabs?.querySelectorAll('[data-week-tab]').forEach((tab) => {
+      const active = tab.getAttribute('data-week-tab') === week;
       tab.classList.toggle('bg-gold', active);
       tab.classList.toggle('text-bg', active);
       tab.classList.toggle('text-muted-softer', !active);
@@ -119,5 +117,27 @@ function groupsForWeek(week: number): string[] {
     document.querySelectorAll('[data-week-panel]').forEach((panel) => {
       panel.classList.toggle('hidden', panel.getAttribute('data-week-panel') !== week);
     });
+
+    // Carry the week over to the other bracket's matchups page.
+    document.querySelectorAll<HTMLAnchorElement>('[data-bracket-link]').forEach((link) => {
+      const url = new URL(link.href);
+      url.hash = `week-${week}`;
+      link.href = url.toString();
+    });
+  }
+
+  // Falls back to the server-rendered default (first week) if the hash's week
+  // doesn't exist in this bracket.
+  const hashWeek = location.hash.match(/^#week-(\d+)$/)?.[1];
+  if (hashWeek && tabs?.querySelector(`[data-week-tab="${hashWeek}"]`)) {
+    activateWeek(hashWeek);
+  }
+
+  tabs?.addEventListener('click', (event) => {
+    const button = (event.target as Element).closest('[data-week-tab]');
+    if (!button) return;
+    const week = button.getAttribute('data-week-tab')!;
+    activateWeek(week);
+    history.replaceState(null, '', `#week-${week}`);
   });
 </script>
