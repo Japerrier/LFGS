@@ -44,44 +44,6 @@ export interface TeamMember {
   seasonScreenshotImageKeys?: string[];
 }
 
-export interface MapResult {
-  matchDataId: string;
-  season: number;
-  matchId: string;
-  mapNumber: number;
-  mapName: string;
-  /** Rounds/points won on this map (e.g. Control 2-1) — not a win/loss flag.
-   *  The map's winner (or draw) is derived by comparing these, same as
-   *  Team.slug is derived rather than stored. Also what "map differential"
-   *  tiebreaker seeding is computed from. */
-  team1Score: number;
-  team2Score: number;
-}
-
-export interface PlayerMapStat {
-  matchDataId: string;
-  season: number;
-  matchId: string;
-  mapNumber: number;
-  /** Derived from the player's BattleTag with the #discriminator stripped —
-   *  same convention as TeamMember.name. The raw BattleTag is never exposed
-   *  to the site, same privacy reasoning as Team_Members. */
-  name: string;
-  /** Present only when this player's BattleTag matched a registered
-   *  Team_Members record — absent for an unregistered outside ringer. */
-  memberId?: string;
-  /** Team they played FOR on this specific map — not necessarily their
-   *  registered team, since a ringer can fill in for a different team. */
-  teamId: string;
-  ringer?: boolean;
-  eliminations: number;
-  assists: number;
-  deaths: number;
-  damage: number;
-  healing: number;
-  mitigation: number;
-}
-
 export interface Matchup {
   matchId: string;
   season: number;
@@ -94,6 +56,12 @@ export interface Matchup {
   /** Eastern wall-clock timestamp ('YYYY-MM-DDTHH:mm:ss') this match is scheduled
    *  for — same convention as KeyDate.activeAt. Omit until a time is confirmed. */
   matchTime?: string;
+  /** Maps won by each side. Both are added after the match is played and are
+   *  omitted until then. */
+  team1Score?: number;
+  team2Score?: number;
+  /** Names of the maps that were played, in order. Omitted until played. */
+  maps?: string[];
 }
 
 export type KeyDateStatus = 'Open' | 'Closed' | 'Upcoming' | 'TBD' | 'In Progress';
