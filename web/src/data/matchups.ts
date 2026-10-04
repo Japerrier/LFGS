@@ -33,6 +33,8 @@ export const matchups: Matchup[] = (Items ?? []).map((item) => ({
   team1Score: item.team1Score as number | undefined,
   team2Score: item.team2Score as number | undefined,
   maps: item.maps as string[] | undefined,
+  team1Forfeit: item.team1Forfeit === true,
+  team2Forfeit: item.team2Forfeit === true,
 }));
 
 // Weeks only show up on the site once a matchup row exists for them — there's

@@ -56,12 +56,13 @@ function buildUpdatedMatchup(result, teamIds, matchups) {
   // Remap onto whichever side is actually team1Id/team2Id on the Matchups row,
   // regardless of the order the seed data listed them in.
   const sameOrder = matchup.team1Id === rawTeam1Id;
-  return {
+  const updated = {
     ...matchup,
     team1Score: sameOrder ? result.team1Score : result.team2Score,
     team2Score: sameOrder ? result.team2Score : result.team1Score,
-    maps: result.maps,
   };
+  if (result.maps) updated.maps = result.maps;
+  return updated;
 }
 
 async function recordMatchResults() {

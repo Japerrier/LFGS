@@ -62,6 +62,10 @@ export interface Matchup {
   team2Score?: number;
   /** Names of the maps that were played, in order. Omitted until played. */
   maps?: string[];
+  /** Whether each side forfeited the match. Either, both or neither can be
+   *  true; omitted is treated as false. */
+  team1Forfeit?: boolean;
+  team2Forfeit?: boolean;
 }
 
 export type KeyDateStatus = 'Open' | 'Closed' | 'Upcoming' | 'TBD' | 'In Progress';

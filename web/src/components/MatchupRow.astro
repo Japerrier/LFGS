@@ -7,9 +7,25 @@ interface Props {
   team1: Team;
   team2: Team;
   matchTime?: string;
+  team1Score?: number;
+  team2Score?: number;
+  team1Forfeit?: boolean;
+  team2Forfeit?: boolean;
 }
 
-const { team1, team2, matchTime } = Astro.props;
+const { team1, team2, matchTime, team1Score: storedTeam1Score, team2Score: storedTeam2Score, team1Forfeit, team2Forfeit } =
+  Astro.props;
+
+// A forfeited match is always shown as a 3-0 win for the team that showed up
+// (0 for each forfeiting team), regardless of any score stored on the row.
+const FORFEIT_WIN_SCORE = 3;
+const anyForfeit = team1Forfeit || team2Forfeit;
+const team1Score = anyForfeit ? (team1Forfeit ? 0 : FORFEIT_WIN_SCORE) : storedTeam1Score;
+const team2Score = anyForfeit ? (team2Forfeit ? 0 : FORFEIT_WIN_SCORE) : storedTeam2Score;
+
+const hasScore = team1Score !== undefined && team2Score !== undefined;
+const team1Won = hasScore && team1Score > team2Score;
+const team2Won = hasScore && team2Score > team1Score;
 ---
 
 <div class="grid grid-cols-[1fr_200px_1fr] items-center gap-6 rounded-2xl border border-gold/18 bg-bg-raised px-6 py-5">
@@ -21,10 +37,25 @@ const { team1, team2, matchTime } = Astro.props;
         {teamInitials(team1.name)}
       </div>
     )}
-    <span class="truncate">{team1.name}</span>
+    <div class="flex min-w-0 flex-col items-start gap-1">
+      <span class="max-w-full truncate">{team1.name}</span>
+      {team1Forfeit && (
+        <span class="rounded-full border border-youtube/40 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-youtube">
+          Forfeit
+        </span>
+      )}
+    </div>
   </a>
   <div class="flex flex-col items-center gap-1">
-    <span class="text-md text-faint">vs</span>
+    {hasScore ? (
+      <div class="flex items-center gap-3 font-display text-4xl font-bold">
+        <span class:list={[team1Won ? 'text-gold' : 'text-muted']}>{team1Score}</span>
+        <span class="text-xl text-faint">–</span>
+        <span class:list={[team2Won ? 'text-gold' : 'text-muted']}>{team2Score}</span>
+      </div>
+    ) : (
+      <span class="text-md text-faint">vs</span>
+    )}
     {matchTime && <span class="whitespace-nowrap text-sm text-muted-softer">{formatMatchTime(matchTime)}</span>}
   </div>
   <a
@@ -38,6 +69,13 @@ const { team1, team2, matchTime } = Astro.props;
         {teamInitials(team2.name)}
       </div>
     )}
-    <span class="truncate">{team2.name}</span>
+    <div class="flex min-w-0 flex-col items-end gap-1">
+      <span class="max-w-full truncate">{team2.name}</span>
+      {team2Forfeit && (
+        <span class="rounded-full border border-youtube/40 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-youtube">
+          Forfeit
+        </span>
+      )}
+    </div>
   </a>
 </div>
