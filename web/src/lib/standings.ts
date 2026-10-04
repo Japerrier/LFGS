@@ -8,9 +8,8 @@ export interface StandingsRow {
   losses: number;
   mapWins: number;
   mapLosses: number;
-  /** Median Buchholz: the sum of the match wins of the teams this team has
-   *  played, ignoring the strongest and weakest of them. */
-  medianBuchholz: number;
+  /** Map differential: map wins minus map losses. */
+  mapDiff: number;
   /** Competition-style rank (1, 2, 2, 4). */
   rank: number;
   /** True when every automatic tiebreaker still leaves this team level with
@@ -28,7 +27,7 @@ interface Result {
 type Totals = Map<string, { played: number; wins: number; mapWins: number; mapLosses: number }>;
 
 // Ranks one group's teams per the rulebook's Tiebreaker section, in order:
-//   1. match wins  2. map wins  3. head-to-head  4. median Buchholz
+//   1. match wins  2. map wins  3. map differential  4. head-to-head
 // A 5th tiebreaker (a best-of-3) is played by staff, so teams still level
 // after step 4 share a rank and are flagged `tied`.
 //
@@ -60,21 +59,11 @@ export function computeStandings(matchups: Matchup[]): StandingsRow[] {
     else if (r.teamBScore > r.teamAScore) b.wins++;
   }
 
-  const medianBuchholz = new Map<string, number>();
-  for (const id of teams.keys()) {
-    const opponentWins = results
-      .filter((r) => r.teamAId === id || r.teamBId === id)
-      .map((r) => totals.get(r.teamAId === id ? r.teamBId : r.teamAId)!.wins)
-      .sort((x, y) => x - y);
-    // Dropping the best and worst only makes sense once there's a middle left.
-    const counted = opponentWins.length > 2 ? opponentWins.slice(1, -1) : opponentWins;
-    medianBuchholz.set(id, counted.reduce((sum, w) => sum + w, 0));
-  }
-
   // Each criterion scores every team in the tied group; higher is better.
   const criteria: ((group: string[]) => Map<string, number>)[] = [
     (group) => new Map(group.map((id) => [id, totals.get(id)!.wins])),
     (group) => new Map(group.map((id) => [id, totals.get(id)!.mapWins])),
+    (group) => new Map(group.map((id) => [id, totals.get(id)!.mapWins - totals.get(id)!.mapLosses])),
     (group) => {
       // Only matches between the tied teams count — recomputed for each
       // (sub)group, since a smaller group may have a clearer head-to-head.
@@ -86,7 +75,6 @@ export function computeStandings(matchups: Matchup[]): StandingsRow[] {
       }
       return wins;
     },
-    (group) => new Map(group.map((id) => [id, medianBuchholz.get(id)!])),
   ];
 
   // Splits a tied group with the first criterion that separates it, then
@@ -118,7 +106,7 @@ export function computeStandings(matchups: Matchup[]): StandingsRow[] {
         losses: t.played - t.wins,
         mapWins: t.mapWins,
         mapLosses: t.mapLosses,
-        medianBuchholz: medianBuchholz.get(id)!,
+        mapDiff: t.mapWins - t.mapLosses,
         rank: placed + 1,
         tied: tier.length > 1,
       });

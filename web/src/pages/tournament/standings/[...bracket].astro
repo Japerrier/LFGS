@@ -44,9 +44,9 @@ const hasTies = rows.some((r) => r.tied);
           <div class="flex flex-col gap-6">
             <StandingsTable rows={rows} />
             <div class="flex flex-col gap-1 text-[15px] text-muted">
-              <div>W/L: match wins and losses. MW/ML: map wins and losses. MB: median Buchholz (strength of schedule).</div>
+              <div>W/L: match wins and losses. MW/ML: map wins and losses. MD: map differential (map wins minus map losses).</div>
               <div>
-                Ranked by match wins, then map wins, head-to-head, and median Buchholz — see the{' '}
+                Ranked by match wins, then map wins, map differential, and head-to-head — see the{' '}
                 <a href="/rulebook#tiebreaker" class="text-gold hover:underline">rulebook</a>. A forfeit counts as a 3-0 win.
               </div>
               {hasTies && (
