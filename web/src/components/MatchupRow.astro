@@ -2,6 +2,7 @@
 import { teamInitials } from '../data/teams';
 import type { Team } from '../data/types';
 import { formatMatchTime } from '../lib/matchTime';
+import { resolveScores } from '../lib/matchScore';
 
 interface Props {
   team1: Team;
@@ -13,15 +14,8 @@ interface Props {
   team2Forfeit?: boolean;
 }
 
-const { team1, team2, matchTime, team1Score: storedTeam1Score, team2Score: storedTeam2Score, team1Forfeit, team2Forfeit } =
-  Astro.props;
-
-// A forfeited match is always shown as a 3-0 win for the team that showed up
-// (0 for each forfeiting team), regardless of any score stored on the row.
-const FORFEIT_WIN_SCORE = 3;
-const anyForfeit = team1Forfeit || team2Forfeit;
-const team1Score = anyForfeit ? (team1Forfeit ? 0 : FORFEIT_WIN_SCORE) : storedTeam1Score;
-const team2Score = anyForfeit ? (team2Forfeit ? 0 : FORFEIT_WIN_SCORE) : storedTeam2Score;
+const { team1, team2, matchTime, team1Forfeit, team2Forfeit } = Astro.props;
+const { team1Score, team2Score } = resolveScores(Astro.props);
 
 const hasScore = team1Score !== undefined && team2Score !== undefined;
 const team1Won = hasScore && team1Score > team2Score;

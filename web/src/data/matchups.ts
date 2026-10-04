@@ -37,6 +37,12 @@ export const matchups: Matchup[] = (Items ?? []).map((item) => ({
   team2Forfeit: item.team2Forfeit === true,
 }));
 
+export function getMatchupsByTeamId(teamId: string): Matchup[] {
+  return matchups
+    .filter((m) => m.team1.teamId === teamId || m.team2.teamId === teamId)
+    .sort((a, b) => a.week - b.week);
+}
+
 // Weeks only show up on the site once a matchup row exists for them — there's
 // no separate "week count" config. Adding week 2 is just seeding week 2 rows.
 export function getMatchupsByBracket(bracket: Bracket): Matchup[] {

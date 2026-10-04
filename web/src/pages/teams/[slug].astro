@@ -6,6 +6,8 @@ import { bracketToSlug } from '../../lib/brackets';
 import { slugify } from '../../lib/slug';
 import { CURRENT_LFGS_SEASON } from '../../lib/season';
 import { displayRank } from '../../lib/rank';
+import { getMatchupsByTeamId } from '../../data/matchups';
+import { resolveScores } from '../../lib/matchScore';
 
 export async function getStaticPaths() {
   return Promise.all(
@@ -21,6 +23,38 @@ const roster = members.filter((m) => m.memberType === 'Player');
 const headCoach = members.find((m) => m.memberType === 'Head Coach');
 const assistantCoach = members.find((m) => m.memberType === 'Assistant Coach');
 const captain = roster.find((m) => m.captain);
+
+// Only matches that have a result (a score, or a forfeit that implies one),
+// shown from this team's point of view.
+const matchHistory = getMatchupsByTeamId(team.teamId)
+  .map((m) => {
+    const isTeam1 = m.team1.teamId === team.teamId;
+    const { team1Score, team2Score } = resolveScores(m);
+    if (team1Score === undefined || team2Score === undefined) return undefined;
+    const teamScore = isTeam1 ? team1Score : team2Score;
+    const opponentScore = isTeam1 ? team2Score : team1Score;
+    const teamForfeited = isTeam1 ? m.team1Forfeit : m.team2Forfeit;
+    const opponentForfeited = isTeam1 ? m.team2Forfeit : m.team1Forfeit;
+    // Worded from this team's point of view so it can't be misread as the opponent's forfeit.
+    const forfeitLabel =
+      teamForfeited && opponentForfeited
+        ? 'Double forfeit'
+        : teamForfeited
+          ? 'Forfeit loss'
+          : opponentForfeited
+            ? 'Forfeit win'
+            : undefined;
+    return {
+      matchId: m.matchId,
+      week: m.week,
+      opponent: isTeam1 ? m.team2 : m.team1,
+      teamScore,
+      opponentScore,
+      won: teamScore > opponentScore,
+      forfeitLabel,
+    };
+  })
+  .filter((m) => m !== undefined);
 
 const rosterWithRank = roster.map((p) => ({
   member: p,
@@ -106,9 +140,37 @@ const rosterWithRank = roster.map((p) => ({
         )}
 
         <h2 class="mb-4 font-display text-xl font-bold text-ink">Match History</h2>
-        <div class="rounded-xl border border-gold/12 bg-bg-raised p-6 text-sm text-muted">
-          Season {CURRENT_LFGS_SEASON} hasn't started yet — match history will appear here after Week 1.
-        </div>
+        {matchHistory.length === 0 ? (
+          <div class="rounded-xl border border-gold/12 bg-bg-raised p-6 text-sm text-muted">
+            Season {CURRENT_LFGS_SEASON} hasn't started yet — match history will appear here after Week 1.
+          </div>
+        ) : (
+          <div class="overflow-hidden rounded-xl border border-gold/12 bg-bg-raised">
+            <div class="grid grid-cols-[72px_1fr_auto] gap-4 border-b border-gold/12 px-5 py-3 font-display text-xs font-semibold uppercase tracking-wide text-muted">
+              <div>Week</div>
+              <div>Opponent</div>
+              <div class="text-right">Score</div>
+            </div>
+            {matchHistory.map((m) => (
+              <div class="grid grid-cols-[72px_1fr_auto] items-center gap-4 border-b border-gold/8 px-5 py-3.5 last:border-b-0">
+                <div class="font-display text-sm font-bold text-muted-softer">{m.week}</div>
+                <a href={`/teams/${m.opponent.slug}`} class="min-w-0 truncate font-display text-[15px] font-bold text-ink hover:text-gold">
+                  {m.opponent.name}
+                </a>
+                <div class="flex items-center justify-end gap-3">
+                  {m.forfeitLabel && (
+                    <span class="rounded-full border border-youtube/40 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-youtube">
+                      {m.forfeitLabel}
+                    </span>
+                  )}
+                  <div class:list={['font-display text-lg font-bold', m.won ? 'text-gold' : 'text-muted']}>
+                    {m.teamScore} – {m.opponentScore}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div class="mt-11 flex flex-col gap-4">
@@ -131,11 +193,6 @@ const rosterWithRank = roster.map((p) => ({
               <div class="text-sm text-muted-softer">{captain?.name ?? 'TBD'}</div>
             </div>
           </div>
-        </div>
-
-        <div class="rounded-xl border border-gold/12 bg-bg-raised p-5">
-          <div class="mb-3.5 font-display text-[15px] font-bold text-ink">Standings</div>
-          <div class="text-[13.5px] text-muted-softer">Standings will be available after Week 1.</div>
         </div>
       </div>
     </div>
