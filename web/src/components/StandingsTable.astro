@@ -1,0 +1,56 @@
+---
+import { teamInitials } from '../data/teams';
+import type { StandingsRow } from '../lib/standings';
+
+interface Props {
+  rows: StandingsRow[];
+}
+
+const { rows } = Astro.props;
+
+const columns = 'grid-cols-[36px_1fr_repeat(4,44px)_56px] sm:grid-cols-[48px_1fr_repeat(4,64px)_88px]';
+---
+
+<div class="overflow-hidden rounded-xl border border-gold/12 bg-bg-raised">
+  <div
+    class:list={[
+      'grid gap-2 border-b border-gold/12 px-4 py-3 font-display text-xs font-semibold uppercase tracking-wide text-muted sm:gap-3 sm:px-5',
+      columns,
+    ]}
+  >
+    <div>#</div>
+    <div>Team</div>
+    <div class="text-center" title="Match wins">W</div>
+    <div class="text-center" title="Match losses">L</div>
+    <div class="text-center" title="Map wins">MW</div>
+    <div class="text-center" title="Map losses">ML</div>
+    <div class="text-center" title="Median Buchholz: strength of schedule, the last automatic tiebreaker">MB</div>
+  </div>
+  {rows.map((row) => (
+    <div
+      class:list={[
+        'grid items-center gap-2 border-b border-gold/8 px-4 py-3 last:border-b-0 sm:gap-3 sm:px-5',
+        columns,
+      ]}
+    >
+      <div class="font-display text-sm font-bold text-muted-softer">
+        {row.rank}{row.tied && <span class="text-gold">*</span>}
+      </div>
+      <a href={`/teams/${row.team.slug}`} class="flex min-w-0 items-center gap-3 font-display text-[15px] font-bold text-ink hover:text-gold">
+        {row.team.logoKey ? (
+          <img src={`/media/${row.team.logoKey}`} alt={`${row.team.name} logo`} class="h-9 w-9 shrink-0 rounded-lg object-cover" />
+        ) : (
+          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-gold-grad-from to-gold-grad-to font-display text-xs font-bold text-gold-ink">
+            {teamInitials(row.team.name)}
+          </div>
+        )}
+        <span class="truncate">{row.team.name}</span>
+      </a>
+      <div class="text-center font-display text-base font-bold text-gold">{row.wins}</div>
+      <div class="text-center font-display text-base font-bold text-ink">{row.losses}</div>
+      <div class="text-center text-sm text-muted-softer">{row.mapWins}</div>
+      <div class="text-center text-sm text-muted-softer">{row.mapLosses}</div>
+      <div class="text-center text-sm text-muted">{row.medianBuchholz}</div>
+    </div>
+  ))}
+</div>

@@ -2,7 +2,10 @@
 import Layout from '../../../layouts/Layout.astro';
 import TournamentNav from '../../../components/TournamentNav.astro';
 import BracketRedirect from '../../../components/BracketRedirect.astro';
+import StandingsTable from '../../../components/StandingsTable.astro';
 import { BRACKETS, bracketFromSlug, bracketToSlug } from '../../../lib/brackets';
+import { getMatchupsByBracket } from '../../../data/matchups';
+import { computeStandings } from '../../../lib/standings';
 
 export function getStaticPaths() {
   return [
@@ -15,6 +18,11 @@ export function getStaticPaths() {
 
 const { bracket: bracketSlug } = Astro.params;
 const bracket = bracketSlug ? bracketFromSlug(bracketSlug) : undefined;
+
+// One table per bracket — Diamond's two round-robin groups are ranked together.
+const rows = bracket ? computeStandings(getMatchupsByBracket(bracket)) : [];
+const hasResults = rows.some((r) => r.played > 0);
+const hasTies = rows.some((r) => r.tied);
 ---
 
 <Layout title={bracket ? `${bracket} Standings` : 'Standings'}>
@@ -25,12 +33,28 @@ const bracket = bracketSlug ? bracketFromSlug(bracketSlug) : undefined;
       <>
         <TournamentNav activeTab="standings" bracket={bracket} />
 
-        <div class="rounded-xl border border-gold/12 bg-bg-raised p-8 text-center">
-          <div class="mb-2 font-display text-lg font-bold text-ink">Standings TBD</div>
-          <div class="text-sm text-muted">
-            Standings will be available after Week 1. Check back once the {bracket} regular season is underway.
+        {!hasResults ? (
+          <div class="rounded-xl border border-gold/12 bg-bg-raised p-8 text-center">
+            <div class="mb-2 font-display text-lg font-bold text-ink">Standings TBD</div>
+            <div class="text-sm text-muted">
+              Standings will be available after Week 1. Check back once the {bracket} regular season is underway.
+            </div>
           </div>
-        </div>
+        ) : (
+          <div class="flex flex-col gap-6">
+            <StandingsTable rows={rows} />
+            <div class="flex flex-col gap-1 text-[13px] text-muted">
+              <div>W/L: match wins and losses. MW/ML: map wins and losses. MB: median Buchholz (strength of schedule).</div>
+              <div>
+                Ranked by match wins, then map wins, head-to-head, and median Buchholz — see the{' '}
+                <a href="/rulebook#tiebreaker" class="text-gold hover:underline">rulebook</a>. A forfeit counts as a 3-0 win.
+              </div>
+              {hasTies && (
+                <div><span class="text-gold">*</span> Level on every tiebreaker so far; staff settle these with a best-of-3.</div>
+              )}
+            </div>
+          </div>
+        )}
       </>
     )}
   </div>
