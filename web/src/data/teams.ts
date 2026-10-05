@@ -3,9 +3,19 @@ import { dynamoDb } from '../lib/dynamodb';
 import { normalizeBracket } from '../lib/brackets';
 import { CURRENT_LFGS_SEASON } from '../lib/season';
 import { slugify } from '../lib/slug';
-import type { Bracket, Team } from './types';
+import type { Bracket, Team, TeamStatus } from './types';
 
 const TEAMS_TABLE = 'Teams';
+
+// A typo here would quietly show a withdrawn team as active, so fail the build
+// instead of guessing.
+function parseStatus(item: Record<string, unknown>): TeamStatus | undefined {
+  if (item.status === undefined || item.status === null) return undefined;
+  if (item.status === 'eliminated' || item.status === 'withdrawn' || item.status === 'disqualified') return item.status;
+  throw new Error(
+    `Teams row ${item.teamId} has unknown status "${item.status}" (expected "eliminated", "withdrawn" or "disqualified")`
+  );
+}
 
 const { Items } = await dynamoDb.send(
   new QueryCommand({
@@ -27,6 +37,7 @@ const rawTeams = (Items ?? [])
     bracket: normalizeBracket(item.bracket) as Bracket,
     logoKey: item.logoKey,
     teamRank: item.teamRank,
+    status: parseStatus(item),
   }));
 
 // Names aren't required to be unique, so slugs derived from them aren't

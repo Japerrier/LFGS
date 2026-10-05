@@ -34,11 +34,19 @@ type Totals = Map<string, { played: number; wins: number; mapWins: number; mapLo
 // A forfeited match counts as a 3-0 win (see resolveScores), and a match with
 // no winner (both teams forfeited) counts as a loss for both. Matches without
 // a result yet are ignored.
-export function computeStandings(matchups: Matchup[]): StandingsRow[] {
+//
+// Team status only decides which table a team lands in; it never changes a
+// record. `main` lists teams still in, then eliminated teams (numbered on
+// from them). `removed` (withdrawn or disqualified) teams get their own table,
+// ordered by the same rules, but a rank isn't meaningful there.
+export function computeStandings(matchups: Matchup[]): { main: StandingsRow[]; removed: StandingsRow[] } {
   const teams = new Map<string, Team>();
   const results: Result[] = [];
   for (const m of matchups) {
     teams.set(m.team1.teamId, m.team1);
+    // A bye week has no opponent and no result: the team still appears in
+    // the table (above) but the week doesn't count as played.
+    if (m.byeWeek || !m.team2) continue;
     teams.set(m.team2.teamId, m.team2);
     const { team1Score, team2Score } = resolveScores(m);
     if (team1Score === undefined || team2Score === undefined) continue;
@@ -92,26 +100,39 @@ export function computeStandings(matchups: Matchup[]): StandingsRow[] {
     return [group];
   }
 
-  const rows: StandingsRow[] = [];
-  let placed = 0;
-  for (const tier of resolve([...teams.keys()])) {
-    // Teams level after every tiebreaker are listed alphabetically.
-    const ordered = [...tier].sort((x, y) => teams.get(x)!.name.localeCompare(teams.get(y)!.name));
-    for (const id of ordered) {
-      const t = totals.get(id)!;
-      rows.push({
-        team: teams.get(id)!,
-        played: t.played,
-        wins: t.wins,
-        losses: t.played - t.wins,
-        mapWins: t.mapWins,
-        mapLosses: t.mapLosses,
-        mapDiff: t.mapWins - t.mapLosses,
-        rank: placed + 1,
-        tied: tier.length > 1,
-      });
+  // Ranks just these teams (still using every team's results above), with
+  // ranks counting up from `placed`.
+  function rankTeams(ids: string[], placed: number): StandingsRow[] {
+    const rows: StandingsRow[] = [];
+    for (const tier of resolve(ids)) {
+      // Teams level after every tiebreaker are listed alphabetically.
+      const ordered = [...tier].sort((x, y) => teams.get(x)!.name.localeCompare(teams.get(y)!.name));
+      for (const id of ordered) {
+        const t = totals.get(id)!;
+        rows.push({
+          team: teams.get(id)!,
+          played: t.played,
+          wins: t.wins,
+          losses: t.played - t.wins,
+          mapWins: t.mapWins,
+          mapLosses: t.mapLosses,
+          mapDiff: t.mapWins - t.mapLosses,
+          rank: placed + 1,
+          tied: tier.length > 1,
+        });
+      }
+      placed += tier.length;
     }
-    placed += tier.length;
+    return rows;
   }
-  return rows;
+
+  const idsWithStatus = (...statuses: Team['status'][]) =>
+    [...teams.keys()].filter((id) => statuses.includes(teams.get(id)!.status));
+  const active = idsWithStatus(undefined);
+  // Eliminated teams are ranked among themselves and numbered on from the
+  // teams still in, so they always sit below them in the one table.
+  return {
+    main: [...rankTeams(active, 0), ...rankTeams(idsWithStatus('eliminated'), active.length)],
+    removed: rankTeams(idsWithStatus('withdrawn', 'disqualified'), 0),
+  };
 }

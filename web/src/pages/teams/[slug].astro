@@ -24,10 +24,12 @@ const headCoach = members.find((m) => m.memberType === 'Head Coach');
 const assistantCoach = members.find((m) => m.memberType === 'Assistant Coach');
 const captain = roster.find((m) => m.captain);
 
-// Only matches that have a result (a score, or a forfeit that implies one),
-// shown from this team's point of view.
+// Matches that have a result (a score, or a forfeit that implies one), shown
+// from this team's point of view, plus any bye weeks so every week this team
+// was scheduled for shows up.
 const matchHistory = getMatchupsByTeamId(team.teamId)
   .map((m) => {
+    if (m.byeWeek || !m.team2) return { bye: true as const, matchId: m.matchId, week: m.week };
     const isTeam1 = m.team1.teamId === team.teamId;
     const { team1Score, team2Score } = resolveScores(m);
     if (team1Score === undefined || team2Score === undefined) return undefined;
@@ -45,6 +47,7 @@ const matchHistory = getMatchupsByTeamId(team.teamId)
             ? 'Forfeit win'
             : undefined;
     return {
+      bye: false as const,
       matchId: m.matchId,
       week: m.week,
       opponent: isTeam1 ? m.team2 : m.team1,
@@ -91,6 +94,11 @@ const rosterWithRank = roster.map((p) => ({
           <div class="rounded-md bg-gold/12 px-2.5 py-[3px] font-display text-xs font-semibold uppercase tracking-wide text-gold">
             {team.bracket}
           </div>
+          {(team.status === 'withdrawn' || team.status === 'disqualified') && (
+            <div class="rounded-md border border-youtube/40 px-2.5 py-[3px] font-display text-xs font-semibold uppercase tracking-wide text-youtube">
+              {team.status}
+            </div>
+          )}
         </div>
         <div class="font-display text-[34px] font-bold text-ink">{team.name}</div>
       </div>
@@ -151,7 +159,13 @@ const rosterWithRank = roster.map((p) => ({
               <div>Opponent</div>
               <div class="text-right">Score</div>
             </div>
-            {matchHistory.map((m) => (
+            {matchHistory.map((m) => m.bye ? (
+              <div class="grid grid-cols-[72px_1fr_auto] items-center gap-4 border-b border-gold/8 px-5 py-3.5 last:border-b-0">
+                <div class="font-display text-sm font-bold text-muted-softer">{m.week}</div>
+                <div class="font-display text-[15px] font-bold text-muted">Bye Week</div>
+                <div class="text-right font-display text-lg font-bold text-faint">–</div>
+              </div>
+            ) : (
               <div class="grid grid-cols-[72px_1fr_auto] items-center gap-4 border-b border-gold/8 px-5 py-3.5 last:border-b-0">
                 <div class="font-display text-sm font-bold text-muted-softer">{m.week}</div>
                 <a href={`/teams/${m.opponent.slug}`} class="flex min-w-0 items-center gap-3 font-display text-[15px] font-bold text-ink hover:text-gold">

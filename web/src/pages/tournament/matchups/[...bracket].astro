@@ -22,8 +22,12 @@ const bracket = bracketSlug ? bracketFromSlug(bracketSlug) : undefined;
 const bracketMatchups = bracket ? getMatchupsByBracket(bracket) : [];
 const weeks = [...new Set(bracketMatchups.map((m) => m.week))].sort((a, b) => a - b);
 
+// Bye weeks are listed after the scheduled matches (Array.sort is stable, so
+// everything else keeps its order).
 function matchupsForWeek(week: number): Matchup[] {
-  return bracketMatchups.filter((m) => m.week === week);
+  return bracketMatchups
+    .filter((m) => m.week === week)
+    .sort((a, b) => Number(Boolean(a.byeWeek)) - Number(Boolean(b.byeWeek)));
 }
 
 function groupsForWeek(week: number): string[] {
@@ -81,6 +85,7 @@ function groupsForWeek(week: number): string[] {
                                 <MatchupRow
                                   team1={m.team1}
                                   team2={m.team2}
+                                  byeWeek={m.byeWeek}
                                   matchTime={m.matchTime}
                                   team1Score={m.team1Score}
                                   team2Score={m.team2Score}
@@ -97,6 +102,7 @@ function groupsForWeek(week: number): string[] {
                             <MatchupRow
                               team1={m.team1}
                               team2={m.team2}
+                              byeWeek={m.byeWeek}
                               matchTime={m.matchTime}
                               team1Score={m.team1Score}
                               team2Score={m.team2Score}

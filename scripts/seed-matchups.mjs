@@ -1,6 +1,7 @@
 // Batch-inserts the matchups listed in matchups-seed.data.mjs into the
 // Matchups table, resolving each team1Name/team2Name to that team's teamId
-// via the Teams table first.
+// via the Teams table first. A bye week (byeWeek: true) has only team1Name and
+// is written without team2Id/team2Name.
 // Requires AWS credentials configured locally (e.g. `aws configure` or an
 // AWS_PROFILE env var) with write access to the table, and the correct AWS
 // region resolvable from your environment.
@@ -49,10 +50,9 @@ async function seedMatchups() {
   const teamIds = await teamIdsByName(CURRENT_LFGS_SEASON);
 
   const items = matchups.map((m) => {
+    const byeWeek = m.byeWeek === true;
     const team1Id = teamIds.get(m.team1Name);
-    const team2Id = teamIds.get(m.team2Name);
     if (!team1Id) throw new Error(`No team named "${m.team1Name}" found in Teams for season ${CURRENT_LFGS_SEASON}`);
-    if (!team2Id) throw new Error(`No team named "${m.team2Name}" found in Teams for season ${CURRENT_LFGS_SEASON}`);
 
     const matchId = `matchId_${crypto.randomUUID()}`;
     const item = {
@@ -65,9 +65,18 @@ async function seedMatchups() {
       // in the DynamoDB console — the site itself resolves names from
       // teamId at build time (web/src/data/matchups.ts) and ignores these.
       team1Name: m.team1Name,
-      team2Id,
-      team2Name: m.team2Name,
+      byeWeek,
     };
+
+    // A bye week has no second team; every other matchup requires one.
+    if (byeWeek) {
+      if (m.team2Name) throw new Error(`Week ${m.week}: "${m.team1Name}" is a byeWeek but also has a team2Name ("${m.team2Name}")`);
+    } else {
+      const team2Id = teamIds.get(m.team2Name);
+      if (!team2Id) throw new Error(`No team named "${m.team2Name}" found in Teams for season ${CURRENT_LFGS_SEASON}`);
+      item.team2Id = team2Id;
+      item.team2Name = m.team2Name;
+    }
     if (m.group) item.group = m.group;
     return { PutRequest: { Item: item } };
   });

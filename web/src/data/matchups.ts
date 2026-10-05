@@ -21,25 +21,30 @@ function resolveTeam(teamId: string) {
   return team;
 }
 
-export const matchups: Matchup[] = (Items ?? []).map((item) => ({
-  matchId: item.matchId as string,
-  season: item.season,
-  week: item.week as number,
-  bracket: normalizeBracket(item.bracket) as Bracket,
-  group: item.group as 'A' | 'B' | undefined,
-  team1: resolveTeam(item.team1Id),
-  team2: resolveTeam(item.team2Id),
-  matchTime: item.matchTime as string | undefined,
-  team1Score: item.team1Score as number | undefined,
-  team2Score: item.team2Score as number | undefined,
-  maps: item.maps as string[] | undefined,
-  team1Forfeit: item.team1Forfeit === true,
-  team2Forfeit: item.team2Forfeit === true,
-}));
+export const matchups: Matchup[] = (Items ?? []).map((item) => {
+  const byeWeek = item.byeWeek === true;
+  if (!byeWeek && !item.team2Id) throw new Error(`Matchups row ${item.matchId} has no team2Id and isn't a byeWeek`);
+  return {
+    matchId: item.matchId as string,
+    season: item.season,
+    week: item.week as number,
+    bracket: normalizeBracket(item.bracket) as Bracket,
+    group: item.group as 'A' | 'B' | undefined,
+    team1: resolveTeam(item.team1Id),
+    team2: byeWeek ? undefined : resolveTeam(item.team2Id),
+    byeWeek,
+    matchTime: item.matchTime as string | undefined,
+    team1Score: item.team1Score as number | undefined,
+    team2Score: item.team2Score as number | undefined,
+    maps: item.maps as string[] | undefined,
+    team1Forfeit: item.team1Forfeit === true,
+    team2Forfeit: item.team2Forfeit === true,
+  };
+});
 
 export function getMatchupsByTeamId(teamId: string): Matchup[] {
   return matchups
-    .filter((m) => m.team1.teamId === teamId || m.team2.teamId === teamId)
+    .filter((m) => m.team1.teamId === teamId || m.team2?.teamId === teamId)
     .sort((a, b) => a.week - b.week);
 }
 

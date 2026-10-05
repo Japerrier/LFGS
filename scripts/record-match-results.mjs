@@ -1,7 +1,9 @@
 // Adds results (team1Score, team2Score, maps) to existing Matchups rows from
 // match-result-seed.data.mjs. Each entry is matched to its row by season, week
 // and team pair; the row is read, updated, and written back whole, so every
-// other attribute on it is preserved.
+// other attribute on it is preserved. Bye-week rows (byeWeek: true, no
+// team2Id) have no opponent to match against, so they can't be recorded to and
+// are left untouched.
 // Requires AWS credentials configured locally (e.g. `aws configure` or an
 // AWS_PROFILE env var) with read/write access to Teams and Matchups, and the
 // correct AWS region resolvable from your environment.

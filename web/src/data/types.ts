@@ -1,5 +1,10 @@
 export type Bracket = 'Diamond' | 'Emerald';
 
+/** Absent on a team still competing. Set by hand on the Teams row. Display
+ *  only: it never changes matchups, results or forfeits (those are recorded
+ *  on the Matchups rows). */
+export type TeamStatus = 'eliminated' | 'withdrawn' | 'disqualified';
+
 export interface Team {
   teamId: string;
   /** Derived from name at load time — not a stored DynamoDB attribute. */
@@ -14,9 +19,17 @@ export interface Team {
    *  Computed and written by scripts/calculate-team-ranks.mjs — absent until
    *  that's been run for this team, in which case no pillbox is shown. */
   teamRank?: string;
+  /** "eliminated" keeps the team in the main standings, below the teams still
+   *  in. "withdrawn" and "disqualified" move it to its own standings table
+   *  and mark its team page. */
+  status?: TeamStatus;
 }
 
 export type MemberType = 'Player' | 'Head Coach' | 'Assistant Coach' | 'Manager';
+
+/** Absent (blank) on a member who is neither. Set by hand on the
+ *  Team_Members row. */
+export type MemberStatus = 'withdrawn' | 'disqualified';
 
 export interface TeamMember {
   memberId: string;
@@ -24,6 +37,7 @@ export interface TeamMember {
   season: number;
   name: string;
   memberType: MemberType;
+  status?: MemberStatus;
   /** Only checked for memberType "Player" — only `true` shows a player.
    *  Coaches/managers are exempt from this check and can leave it unset. */
   approved?: boolean;
@@ -52,7 +66,11 @@ export interface Matchup {
   /** Diamond's regular season is split into two round-robin groups; Emerald has none. */
   group?: 'A' | 'B';
   team1: Team;
-  team2: Team;
+  /** Absent on a bye week, where team1 simply doesn't play that week. */
+  team2?: Team;
+  /** True when team1 has a bye week: no opponent, no result, and the row is
+   *  ignored by standings and match history. */
+  byeWeek?: boolean;
   /** Eastern wall-clock timestamp ('YYYY-MM-DDTHH:mm:ss') this match is scheduled
    *  for — same convention as KeyDate.activeAt. Omit until a time is confirmed. */
   matchTime?: string;
