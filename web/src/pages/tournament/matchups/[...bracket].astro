@@ -109,51 +109,91 @@ function groupsForWeek(week: number): string[] {
                 </div>
               );
             })}
+
+            {/*
+              Inline (not a bundled module script) and placed right after the
+              panels so it runs synchronously during parsing, before first
+              paint. A bundled <script> is deferred, which let the
+              server-rendered default (Week 1) flash before the restored week
+              was applied. Plain JS only: is:inline scripts aren't compiled.
+            */}
+            <script is:inline>
+              // The selected week lives in the URL hash (#week-N) so it survives the
+              // full page load when toggling Emerald/Diamond, and so a week is linkable.
+              // Navigating to another tab (e.g. Standings) and back drops the hash, so the
+              // last selection is also kept in sessionStorage: an explicit hash wins,
+              // otherwise the remembered week is restored for the rest of the browser
+              // tab's session.
+              (function () {
+                var STORAGE_KEY = 'lfgs:matchups-week';
+                var tabs = document.querySelector('[data-week-tabs]');
+                if (!tabs) return;
+
+                function readStoredWeek() {
+                  try {
+                    return sessionStorage.getItem(STORAGE_KEY);
+                  } catch (e) {
+                    return null;
+                  }
+                }
+
+                function storeWeek(week) {
+                  try {
+                    sessionStorage.setItem(STORAGE_KEY, week);
+                  } catch (e) {
+                    // Storage unavailable (private mode, blocked): the hash still works.
+                  }
+                }
+
+                function activateWeek(week) {
+                  tabs.querySelectorAll('[data-week-tab]').forEach(function (tab) {
+                    var active = tab.getAttribute('data-week-tab') === week;
+                    tab.classList.toggle('bg-gold', active);
+                    tab.classList.toggle('text-bg', active);
+                    tab.classList.toggle('text-muted-softer', !active);
+                    tab.classList.toggle('hover:text-ink', !active);
+                  });
+
+                  document.querySelectorAll('[data-week-panel]').forEach(function (panel) {
+                    panel.classList.toggle('hidden', panel.getAttribute('data-week-panel') !== week);
+                  });
+
+                  // Carry the week over to the other bracket's matchups page.
+                  document.querySelectorAll('[data-bracket-link]').forEach(function (link) {
+                    var url = new URL(link.href);
+                    url.hash = 'week-' + week;
+                    link.href = url.toString();
+                  });
+                }
+
+                // Falls back to the server-rendered default (first week) if the
+                // week doesn't exist in this bracket.
+                function hasWeek(week) {
+                  return Boolean(week && tabs.querySelector('[data-week-tab="' + week + '"]'));
+                }
+
+                var hashMatch = location.hash.match(/^#week-(\d+)$/);
+                var hashWeek = hashMatch ? hashMatch[1] : null;
+                var initialWeek = hasWeek(hashWeek) ? hashWeek : readStoredWeek();
+                if (hasWeek(initialWeek)) {
+                  activateWeek(initialWeek);
+                  storeWeek(initialWeek);
+                  history.replaceState(null, '', '#week-' + initialWeek);
+                }
+
+                tabs.addEventListener('click', function (event) {
+                  var button = event.target.closest('[data-week-tab]');
+                  if (!button) return;
+                  var week = button.getAttribute('data-week-tab');
+                  activateWeek(week);
+                  storeWeek(week);
+                  history.replaceState(null, '', '#week-' + week);
+                });
+              })();
+            </script>
           </>
         )}
       </>
     )}
   </div>
 </Layout>
-
-<script>
-  // The selected week lives in the URL hash (#week-N) so it survives the
-  // full page load when toggling Emerald/Diamond, and so a week is linkable.
-  const tabs = document.querySelector('[data-week-tabs]');
-
-  function activateWeek(week: string) {
-    tabs?.querySelectorAll('[data-week-tab]').forEach((tab) => {
-      const active = tab.getAttribute('data-week-tab') === week;
-      tab.classList.toggle('bg-gold', active);
-      tab.classList.toggle('text-bg', active);
-      tab.classList.toggle('text-muted-softer', !active);
-      tab.classList.toggle('hover:text-ink', !active);
-    });
-
-    document.querySelectorAll('[data-week-panel]').forEach((panel) => {
-      panel.classList.toggle('hidden', panel.getAttribute('data-week-panel') !== week);
-    });
-
-    // Carry the week over to the other bracket's matchups page.
-    document.querySelectorAll<HTMLAnchorElement>('[data-bracket-link]').forEach((link) => {
-      const url = new URL(link.href);
-      url.hash = `week-${week}`;
-      link.href = url.toString();
-    });
-  }
-
-  // Falls back to the server-rendered default (first week) if the hash's week
-  // doesn't exist in this bracket.
-  const hashWeek = location.hash.match(/^#week-(\d+)$/)?.[1];
-  if (hashWeek && tabs?.querySelector(`[data-week-tab="${hashWeek}"]`)) {
-    activateWeek(hashWeek);
-  }
-
-  tabs?.addEventListener('click', (event) => {
-    const button = (event.target as Element).closest('[data-week-tab]');
-    if (!button) return;
-    const week = button.getAttribute('data-week-tab')!;
-    activateWeek(week);
-    history.replaceState(null, '', `#week-${week}`);
-  });
-</script>
