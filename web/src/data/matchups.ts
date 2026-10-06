@@ -30,6 +30,7 @@ export const matchups: Matchup[] = (Items ?? []).map((item) => {
     week: item.week as number,
     bracket: normalizeBracket(item.bracket) as Bracket,
     group: item.group as 'A' | 'B' | undefined,
+    playoff: item.playoff === true,
     team1: resolveTeam(item.team1Id),
     team2: byeWeek ? undefined : resolveTeam(item.team2Id),
     byeWeek,
@@ -50,6 +51,18 @@ export function getMatchupsByTeamId(teamId: string): Matchup[] {
 
 // Weeks only show up on the site once a matchup row exists for them — there's
 // no separate "week count" config. Adding week 2 is just seeding week 2 rows.
+// Every row, playoffs included: this is the full schedule shown on the
+// matchups tab.
 export function getMatchupsByBracket(bracket: Bracket): Matchup[] {
   return matchups.filter((m) => m.bracket === bracket).sort((a, b) => a.week - b.week);
+}
+
+// Playoff rows are left out so their results never count toward the
+// regular-season standings (or the seeds the playoffs tab derives from them).
+export function getRegularSeasonMatchupsByBracket(bracket: Bracket): Matchup[] {
+  return getMatchupsByBracket(bracket).filter((m) => !m.playoff);
+}
+
+export function getPlayoffMatchupsByBracket(bracket: Bracket): Matchup[] {
+  return matchups.filter((m) => m.bracket === bracket && m.playoff).sort((a, b) => a.week - b.week);
 }

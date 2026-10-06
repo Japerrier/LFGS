@@ -4,7 +4,7 @@ import TournamentNav from '../../../components/TournamentNav.astro';
 import BracketRedirect from '../../../components/BracketRedirect.astro';
 import StandingsTable from '../../../components/StandingsTable.astro';
 import { BRACKETS, bracketFromSlug, bracketToSlug } from '../../../lib/brackets';
-import { getMatchupsByBracket } from '../../../data/matchups';
+import { getRegularSeasonMatchupsByBracket } from '../../../data/matchups';
 import { computeStandings } from '../../../lib/standings';
 
 export function getStaticPaths() {
@@ -21,7 +21,7 @@ const bracket = bracketSlug ? bracketFromSlug(bracketSlug) : undefined;
 
 // One table per bracket — Diamond's two round-robin groups are ranked together.
 const { main: rows, removed: removedRows } = bracket
-  ? computeStandings(getMatchupsByBracket(bracket))
+  ? computeStandings(getRegularSeasonMatchupsByBracket(bracket))
   : { main: [], removed: [] };
 const hasResults = [...rows, ...removedRows].some((r) => r.played > 0);
 const hasTies = rows.some((r) => r.tied);

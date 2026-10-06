@@ -63,8 +63,14 @@ export interface Matchup {
   season: number;
   week: number;
   bracket: Bracket;
-  /** Diamond's regular season is split into two round-robin groups; Emerald has none. */
+  /** Diamond's regular season is split into two round-robin groups; Emerald has none.
+   *  Playoff matchups have no group (all teams are seeded together). */
   group?: 'A' | 'B';
+  /** True for a playoff matchup (or a playoff bye). Playoff rows show on both
+   *  the matchups tab (as the next week) and the playoffs tab, but never count
+   *  toward the regular-season standings. `week` keeps counting on from the
+   *  regular season. */
+  playoff?: boolean;
   team1: Team;
   /** Absent on a bye week, where team1 simply doesn't play that week. */
   team2?: Team;

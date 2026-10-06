@@ -78,6 +78,7 @@ async function seedMatchups() {
       item.team2Name = m.team2Name;
     }
     if (m.group) item.group = m.group;
+    if (m.playoff) item.playoff = true;
     return { PutRequest: { Item: item } };
   });
 
