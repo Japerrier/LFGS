@@ -65,8 +65,10 @@ async function seedMatchups() {
       // in the DynamoDB console — the site itself resolves names from
       // teamId at build time (web/src/data/matchups.ts) and ignores these.
       team1Name: m.team1Name,
-      byeWeek,
     };
+    // Only written when set explicitly (true or false), so normal matchups
+    // leave the column blank. The site treats a missing byeWeek as false.
+    if (m.byeWeek !== undefined && m.byeWeek !== null) item.byeWeek = m.byeWeek;
 
     // A bye week has no second team; every other matchup requires one.
     if (byeWeek) {
