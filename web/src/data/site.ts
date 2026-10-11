@@ -81,9 +81,9 @@ interface PrizePoolEntry {
 }
 
 export const prizePool: PrizePoolEntry[] = [
-  { place: '1st Place', amount: '6,000 OW Coins', note: '+ 1,000 to head coach' },
-  { place: '2nd Place', amount: '4,000 OW Coins' },
-  { place: '3rd Place', amount: '2,000 OW Coins' },
+  { place: '1st Place', amount: '6,000 OW Coins per player', note: '+ 1,000 to head coach' },
+  { place: '2nd Place', amount: '4,000 OW Coins per player' },
+  { place: '3rd Place', amount: '2,000 OW Coins per player' },
 ];
 
 function bracketPodium(season: number, bracket: 'Diamond' | 'Emerald'): HOFPodiumEntry[] {
