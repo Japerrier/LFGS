@@ -42,34 +42,30 @@ interface Matchup {
 interface Column {
   title: string;
   matchups: Matchup[];
+  /** Replaces the cards with a pointer to the Matchups tab, for weeks played as normal matches. */
+  matchupsLink?: string;
 }
 
 const tbd = (label = 'TBD'): Side => ({ label });
 
-// Emerald: all 4 regular-season teams go straight into a 4-team
-// double-elimination bracket. 4 weeks: UB R1, UB Final/LB R1, LB Final, Grand Final.
+// Emerald: a team dropped, leaving 3 — not enough for double elimination. The 3
+// teams play a round robin for 3 weeks (one team on a bye each week) to set the
+// playoff standings. Then 2nd vs 3rd in a semifinal, and that winner meets 1st
+// in the Grand Final. The round robin matches are listed on the Matchups tab
+// like any other week.
 const emeraldColumns: Column[] = [
   {
-    title: 'Week 1',
-    matchups: [
-      { a: tbd('Seed 1 — TBD'), b: tbd('Seed 4 — TBD') },
-      { a: tbd('Seed 2 — TBD'), b: tbd('Seed 3 — TBD') },
-    ],
+    title: 'Weeks 1–3 — Round Robin',
+    matchups: [],
+    matchupsLink: '/tournament/matchups/emerald',
   },
   {
-    title: 'Week 2',
-    matchups: [
-      { a: tbd(), b: tbd() },
-      { a: tbd(), b: tbd() },
-    ],
+    title: 'Week 4 — Semifinal',
+    matchups: [{ a: tbd('2nd Place — TBD'), b: tbd('3rd Place — TBD') }],
   },
   {
-    title: 'Week 3 — Lower Bracket Final',
-    matchups: [{ a: tbd(), b: tbd() }],
-  },
-  {
-    title: 'Week 4 — Grand Final',
-    matchups: [{ a: tbd(), b: tbd(), grandFinal: true }],
+    title: 'Week 5 — Grand Final',
+    matchups: [{ a: tbd('1st Place — TBD'), b: tbd('Semifinal Winner — TBD'), grandFinal: true }],
   },
 ];
 
@@ -167,7 +163,7 @@ const diamondColumns: Column[] = [
 const columns = bracket === 'Emerald' ? emeraldColumns : diamondColumns;
 const bannerText =
   bracket === 'Emerald'
-    ? 'Top 4 double-elimination. Seeds populate once the Emerald regular season concludes.'
+    ? 'With 3 teams remaining, Emerald playoffs are a 3-week round robin to set the standings. 2nd and 3rd place then play a semifinal, and the winner faces 1st place in the Grand Final.'
     : 'All 8 Diamond teams are seeded together by regular-season record. Seeds 1 & 2 get a bye; seeds 3–6 play in on week 1, and the winners join them in a top 4 double-elimination bracket.';
 ---
 
@@ -185,11 +181,17 @@ const bannerText =
 
         <div
           class="grid grid-cols-1 gap-6 overflow-x-auto pb-2"
-          class:list={bracket === 'Diamond' ? 'sm:grid-cols-[repeat(5,minmax(200px,1fr))]' : 'sm:grid-cols-[repeat(4,minmax(200px,1fr))]'}
+          class:list={bracket === 'Diamond' ? 'sm:grid-cols-[repeat(5,minmax(200px,1fr))]' : 'sm:grid-cols-[repeat(3,minmax(200px,1fr))]'}
         >
           {columns.map((col) => (
             <div class="flex flex-col gap-5">
               <div class="font-display text-[13px] font-bold uppercase tracking-wide text-gold">{col.title}</div>
+              {col.matchupsLink && (
+                <div class="flex flex-col gap-2 rounded-lg border border-gold/18 bg-bg-raised px-4 py-3.5 text-sm text-muted">
+                  <span>Round robin matches are played as normal matchups.</span>
+                  <a href={col.matchupsLink} class="font-display font-bold text-gold hover:underline">See Matchups →</a>
+                </div>
+              )}
               {col.matchups.map((m) => (
                 <div
                   class:list={[

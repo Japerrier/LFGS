@@ -54,7 +54,7 @@ export const keyDates: KeyDate[] = [
   {
     label: 'Playoffs Begin',
     date: 'Mon, Oct 5, 2026',
-    desc: 'Top 4 double-elimination per bracket (Diamond seeds 2 & 3 play-in first)',
+    desc: 'Diamond: top 4 double-elimination (seeds 2 & 3 play-in first). Emerald: 3-team round robin, then semifinal and grand final',
     status: 'Upcoming',
     activeAt: '2026-10-05T00:00:00',
     statusOnceActive: 'Closed',
