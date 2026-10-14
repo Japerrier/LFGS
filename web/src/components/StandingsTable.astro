@@ -1,11 +1,12 @@
 ---
 import { teamInitials } from '../data/teams';
+import TeamStatusPill from './TeamStatusPill.astro';
 import type { StandingsRow } from '../lib/standings';
 
 interface Props {
   rows: StandingsRow[];
   /** The separate table for withdrawn/disqualified teams: no rank numbers or
-   *  tie markers, and each team is labeled with its status instead. */
+   *  tie markers. */
   unranked?: boolean;
 }
 
@@ -58,11 +59,7 @@ const columns = 'grid-cols-[32px_1fr_repeat(4,40px)_48px] sm:grid-cols-[48px_1fr
         )}
         <span class="flex min-w-0 flex-col items-start gap-1 leading-tight">
           {row.team.name}
-          {unranked && row.team.status && (
-            <span class="rounded-full border border-youtube/40 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-youtube">
-              {row.team.status}
-            </span>
-          )}
+          {row.team.status && <TeamStatusPill status={row.team.status} />}
         </span>
       </a>
       <div class="text-center font-display text-2xl font-bold text-gold">{row.wins}</div>

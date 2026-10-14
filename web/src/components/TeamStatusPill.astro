@@ -1,0 +1,17 @@
+---
+import type { TeamStatus } from '../data/types';
+
+interface Props {
+  status: TeamStatus;
+}
+
+const { status } = Astro.props;
+
+// Withdrawn and disqualified teams are out for good, so they use the same red
+// as forfeits; eliminated teams just lost, so they stay neutral.
+const color = status === 'eliminated' ? 'border-muted/40 text-muted' : 'border-youtube/40 text-youtube';
+---
+
+<span class:list={['rounded-full border px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide', color]}>
+  {status}
+</span>

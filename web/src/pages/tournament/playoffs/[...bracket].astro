@@ -74,15 +74,22 @@ const emeraldColumns: Column[] = [
 // 4-team double-elimination bracket for weeks 2-5. Seeds 5 and 6 were level on
 // every tiebreaker, so each was drawn against a team from the other group
 // (3 vs 6, 4 vs 5) rather than a team they'd already played.
+//
+// Seeds come from the regular season alone, so team status (eliminated,
+// withdrawn) is ignored: the play-in losers are knocked out but the seeds
+// shown in the play-in must not shift because of it.
 const standings =
-  bracket === 'Diamond' ? computeStandings(getRegularSeasonMatchupsByBracket('Diamond')).main : [];
+  bracket === 'Diamond'
+    ? computeStandings(getRegularSeasonMatchupsByBracket('Diamond'), { ignoreStatus: true }).main
+    : [];
 const seedByTeamId = new Map(standings.map((r) => [r.team.teamId, r.tied ? `T-${r.rank}` : String(r.rank)]));
+const rankByTeamId = new Map(standings.map((r) => [r.team.teamId, r.rank]));
 
-function side(team: Team, score?: number, opponentScore?: number): Side {
+function side(team: Team, score?: number, opponentScore?: number, seeds = seedByTeamId): Side {
   return {
     label: team.name,
     team,
-    seed: seedByTeamId.get(team.teamId),
+    seed: seeds.get(team.teamId),
     score,
     won: score !== undefined && opponentScore !== undefined && score > opponentScore,
   };
@@ -97,14 +104,14 @@ const seedNumber = (s: Side) => Number(s.seed?.replace('T-', '') ?? Infinity);
 // Real matchups for one playoff week. team1 is the top team on each card and
 // team2 the bottom, exactly as stored. Best seed first, so the higher seed's
 // match leads the column.
-function matchupsFromRows(rows: typeof playoffRows): Matchup[] {
+function matchupsFromRows(rows: typeof playoffRows, seeds = seedByTeamId): Matchup[] {
   return rows
     .filter((m) => !m.byeWeek && m.team2)
     .map((m) => {
       const { team1Score, team2Score } = resolveScores(m);
       return {
-        a: side(m.team1, team1Score, team2Score),
-        b: side(m.team2!, team2Score, team1Score),
+        a: side(m.team1, team1Score, team2Score, seeds),
+        b: side(m.team2!, team2Score, team1Score, seeds),
         matchTime: m.matchTime,
       };
     })
@@ -119,9 +126,21 @@ const playIn: Column = {
 // Playoff weeks keep counting on from the regular season, so the first round
 // after the play-in is the week right after it.
 const round2Rows = playInWeek === undefined ? [] : playoffRows.filter((m) => m.week === playInWeek + 1);
+// The play-in losers are out, so after it the seeds are renumbered: a play-in
+// winner takes the better (lower) seed of its match, whichever team that was.
+// Anyone in week 2 who played the play-in necessarily won it, so this needs no
+// elimination flags. Teams that had a bye keep their regular-season seed.
+const postPlayInSeedByTeamId = new Map(seedByTeamId);
+for (const m of playInRows) {
+  if (m.byeWeek || !m.team2) continue;
+  const better = String(Math.min(rankByTeamId.get(m.team1.teamId) ?? Infinity, rankByTeamId.get(m.team2.teamId) ?? Infinity));
+  postPlayInSeedByTeamId.set(m.team1.teamId, better);
+  postPlayInSeedByTeamId.set(m.team2.teamId, better);
+}
+
 const round2: Column = {
   title: 'Week 2',
-  matchups: matchupsFromRows(round2Rows),
+  matchups: matchupsFromRows(round2Rows, postPlayInSeedByTeamId),
 };
 
 const diamondColumns: Column[] = [

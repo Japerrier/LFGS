@@ -2,6 +2,7 @@
 import Layout from '../../../layouts/Layout.astro';
 import TournamentNav from '../../../components/TournamentNav.astro';
 import BracketRedirect from '../../../components/BracketRedirect.astro';
+import TeamStatusPill from '../../../components/TeamStatusPill.astro';
 import { getTeamsByBracket, teamInitials } from '../../../data/teams';
 import { BRACKETS, bracketFromSlug, bracketToSlug } from '../../../lib/brackets';
 import { CURRENT_LFGS_SEASON } from '../../../lib/season';
@@ -46,7 +47,10 @@ const bracketTeams = bracket ? getTeamsByBracket(bracket) : [];
                     {teamInitials(t.name)}
                   </div>
                 )}
-                <div class="font-display text-[19px] font-bold text-ink">{t.name}</div>
+                <div class="flex min-w-0 flex-col items-start gap-1.5">
+                  <div class="font-display text-[19px] font-bold text-ink">{t.name}</div>
+                  {t.status && <TeamStatusPill status={t.status} />}
+                </div>
               </a>
             ))}
           </div>

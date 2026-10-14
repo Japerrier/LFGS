@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import TeamStatusPill from '../../components/TeamStatusPill.astro';
 import { teams, teamInitials } from '../../data/teams';
 import { getMembersByTeamId, memberRoles } from '../../data/team-members';
 import { bracketToSlug } from '../../lib/brackets';
@@ -94,11 +95,7 @@ const rosterWithRank = roster.map((p) => ({
           <div class="rounded-md bg-gold/12 px-2.5 py-[3px] font-display text-xs font-semibold uppercase tracking-wide text-gold">
             {team.bracket}
           </div>
-          {(team.status === 'withdrawn' || team.status === 'disqualified') && (
-            <div class="rounded-md border border-youtube/40 px-2.5 py-[3px] font-display text-xs font-semibold uppercase tracking-wide text-youtube">
-              {team.status}
-            </div>
-          )}
+          {team.status && <TeamStatusPill status={team.status} />}
         </div>
         <div class="font-display text-[34px] font-bold text-ink">{team.name}</div>
       </div>

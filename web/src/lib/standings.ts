@@ -39,7 +39,14 @@ type Totals = Map<string, { played: number; wins: number; mapWins: number; mapLo
 // record. `main` lists teams still in, then eliminated teams (numbered on
 // from them). `removed` (withdrawn or disqualified) teams get their own table,
 // ordered by the same rules, but a rank isn't meaningful there.
-export function computeStandings(matchups: Matchup[]): { main: StandingsRow[]; removed: StandingsRow[] } {
+//
+// `ignoreStatus` ranks every team together by record alone, as if none were
+// eliminated or removed (for seeding, where a team's original seed must not
+// move once other teams drop out).
+export function computeStandings(
+  matchups: Matchup[],
+  { ignoreStatus = false }: { ignoreStatus?: boolean } = {}
+): { main: StandingsRow[]; removed: StandingsRow[] } {
   const teams = new Map<string, Team>();
   const results: Result[] = [];
   for (const m of matchups) {
@@ -127,7 +134,7 @@ export function computeStandings(matchups: Matchup[]): { main: StandingsRow[]; r
   }
 
   const idsWithStatus = (...statuses: Team['status'][]) =>
-    [...teams.keys()].filter((id) => statuses.includes(teams.get(id)!.status));
+    [...teams.keys()].filter((id) => statuses.includes(ignoreStatus ? undefined : teams.get(id)!.status));
   const active = idsWithStatus(undefined);
   // Eliminated teams are ranked among themselves and numbered on from the
   // teams still in, so they always sit below them in the one table.
