@@ -98,10 +98,11 @@ const playInRows = playoffRows.filter((m) => m.week === playInWeek);
 
 const seedNumber = (s: Side) => Number(s.seed?.replace('T-', '') ?? Infinity);
 
-const playIn: Column = {
-  title: 'Week 1 — Play-In',
-  // Best seed first, so the higher seed's match leads the column.
-  matchups: playInRows
+// Real matchups for one playoff week. team1 is the top team on each card and
+// team2 the bottom, exactly as stored. Best seed first, so the higher seed's
+// match leads the column.
+function matchupsFromRows(rows: typeof playoffRows): Matchup[] {
+  return rows
     .filter((m) => !m.byeWeek && m.team2)
     .map((m) => {
       const { team1Score, team2Score } = resolveScores(m);
@@ -111,7 +112,20 @@ const playIn: Column = {
         matchTime: m.matchTime,
       };
     })
-    .sort((x, y) => Math.min(seedNumber(x.a), seedNumber(x.b)) - Math.min(seedNumber(y.a), seedNumber(y.b))),
+    .sort((x, y) => Math.min(seedNumber(x.a), seedNumber(x.b)) - Math.min(seedNumber(y.a), seedNumber(y.b)));
+}
+
+const playIn: Column = {
+  title: 'Week 1 — Play-In',
+  matchups: matchupsFromRows(playInRows),
+};
+
+// Playoff weeks keep counting on from the regular season, so the first round
+// after the play-in is the week right after it.
+const round2Rows = playInWeek === undefined ? [] : playoffRows.filter((m) => m.week === playInWeek + 1);
+const round2: Column = {
+  title: 'Week 2',
+  matchups: matchupsFromRows(round2Rows),
 };
 
 const diamondColumns: Column[] = [
@@ -124,13 +138,15 @@ const diamondColumns: Column[] = [
           { a: tbd('Seed 4 — TBD'), b: tbd('Seed 5 — TBD') },
         ],
       },
-  {
-    title: 'Week 2',
-    matchups: [
-      { a: tbd('Seed 1 — TBD'), b: tbd('Play-In Winner — TBD') },
-      { a: tbd('Seed 2 — TBD'), b: tbd('Play-In Winner — TBD') },
-    ],
-  },
+  round2Rows.length > 0
+    ? round2
+    : {
+        title: 'Week 2',
+        matchups: [
+          { a: tbd('Seed 1 — TBD'), b: tbd('Play-In Winner — TBD') },
+          { a: tbd('Seed 2 — TBD'), b: tbd('Play-In Winner — TBD') },
+        ],
+      },
   {
     title: 'Week 3',
     matchups: [
