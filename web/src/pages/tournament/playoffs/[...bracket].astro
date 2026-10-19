@@ -160,6 +160,12 @@ const round3: Column = {
   matchups: matchupsFromRows(round3Rows, postPlayInSeedByTeamId).sort((x, y) => upperWins(y) - upperWins(x)),
 };
 
+// Weeks 4 and 5 are a single match each. Seeds still don't change.
+const rowsForRound = (offset: number) =>
+  playInWeek === undefined ? [] : playoffRows.filter((m) => m.week === playInWeek + offset);
+const round4Rows = rowsForRound(3);
+const round5Rows = rowsForRound(4);
+
 const diamondColumns: Column[] = [
   playInRows.length > 0
     ? playIn
@@ -190,11 +196,14 @@ const diamondColumns: Column[] = [
       },
   {
     title: 'Week 4 — Lower Bracket Final',
-    matchups: [{ a: tbd(), b: tbd() }],
+    matchups: round4Rows.length > 0 ? matchupsFromRows(round4Rows, postPlayInSeedByTeamId) : [{ a: tbd(), b: tbd() }],
   },
   {
     title: 'Week 5 — Grand Final',
-    matchups: [{ a: tbd(), b: tbd(), grandFinal: true }],
+    matchups:
+      round5Rows.length > 0
+        ? matchupsFromRows(round5Rows, postPlayInSeedByTeamId).map((m) => ({ ...m, grandFinal: true }))
+        : [{ a: tbd(), b: tbd(), grandFinal: true }],
   },
 ];
 
