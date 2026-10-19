@@ -143,9 +143,12 @@ const round2: Column = {
   matchups: matchupsFromRows(round2Rows, postPlayInSeedByTeamId),
 };
 
+// From week 3 on, a team's place in the double-elimination bracket is set by
+// its results, not its seed, so seeds aren't shown.
+const noSeeds = new Map<string, string>();
+
 // Week 3 pairs the week 2 winners (upper bracket final) and the week 2 losers
-// (lower bracket). Seeds don't change after the play-in. The upper bracket
-// match leads the column, whatever the seeds.
+// (lower bracket). The upper bracket match leads the column.
 const round3Rows = playInWeek === undefined ? [] : playoffRows.filter((m) => m.week === playInWeek + 2);
 const round2Winners = new Set(
   matchupsFromRows(round2Rows, postPlayInSeedByTeamId).flatMap((m) =>
@@ -156,11 +159,12 @@ const upperWins = (m: Matchup) => [m.a, m.b].filter((s) => s.team && round2Winne
 
 const round3: Column = {
   title: 'Week 3',
-  // Array.prototype.sort is stable, so the seed order holds within each bracket.
-  matchups: matchupsFromRows(round3Rows, postPlayInSeedByTeamId).sort((x, y) => upperWins(y) - upperWins(x)),
+  // With no seeds, matchupsFromRows keeps the stored order, and that order holds
+  // until week 2 results decide which match is the upper bracket one.
+  matchups: matchupsFromRows(round3Rows, noSeeds).sort((x, y) => upperWins(y) - upperWins(x)),
 };
 
-// Weeks 4 and 5 are a single match each. Seeds still don't change.
+// Weeks 4 and 5 are a single match each.
 const rowsForRound = (offset: number) =>
   playInWeek === undefined ? [] : playoffRows.filter((m) => m.week === playInWeek + offset);
 const round4Rows = rowsForRound(3);
@@ -196,13 +200,13 @@ const diamondColumns: Column[] = [
       },
   {
     title: 'Week 4 — Lower Bracket Final',
-    matchups: round4Rows.length > 0 ? matchupsFromRows(round4Rows, postPlayInSeedByTeamId) : [{ a: tbd(), b: tbd() }],
+    matchups: round4Rows.length > 0 ? matchupsFromRows(round4Rows, noSeeds) : [{ a: tbd(), b: tbd() }],
   },
   {
     title: 'Week 5 — Grand Final',
     matchups:
       round5Rows.length > 0
-        ? matchupsFromRows(round5Rows, postPlayInSeedByTeamId).map((m) => ({ ...m, grandFinal: true }))
+        ? matchupsFromRows(round5Rows, noSeeds).map((m) => ({ ...m, grandFinal: true }))
         : [{ a: tbd(), b: tbd(), grandFinal: true }],
   },
 ];
