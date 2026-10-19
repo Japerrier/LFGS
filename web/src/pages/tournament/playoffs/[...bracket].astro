@@ -143,6 +143,23 @@ const round2: Column = {
   matchups: matchupsFromRows(round2Rows, postPlayInSeedByTeamId),
 };
 
+// Week 3 pairs the week 2 winners (upper bracket final) and the week 2 losers
+// (lower bracket). Seeds don't change after the play-in. The upper bracket
+// match leads the column, whatever the seeds.
+const round3Rows = playInWeek === undefined ? [] : playoffRows.filter((m) => m.week === playInWeek + 2);
+const round2Winners = new Set(
+  matchupsFromRows(round2Rows, postPlayInSeedByTeamId).flatMap((m) =>
+    [m.a, m.b].filter((s) => s.won && s.team).map((s) => s.team!.teamId),
+  ),
+);
+const upperWins = (m: Matchup) => [m.a, m.b].filter((s) => s.team && round2Winners.has(s.team.teamId)).length;
+
+const round3: Column = {
+  title: 'Week 3',
+  // Array.prototype.sort is stable, so the seed order holds within each bracket.
+  matchups: matchupsFromRows(round3Rows, postPlayInSeedByTeamId).sort((x, y) => upperWins(y) - upperWins(x)),
+};
+
 const diamondColumns: Column[] = [
   playInRows.length > 0
     ? playIn
@@ -162,13 +179,15 @@ const diamondColumns: Column[] = [
           { a: tbd('Seed 2 — TBD'), b: tbd('Play-In Winner — TBD') },
         ],
       },
-  {
-    title: 'Week 3',
-    matchups: [
-      { a: tbd(), b: tbd() },
-      { a: tbd(), b: tbd() },
-    ],
-  },
+  round3Rows.length > 0
+    ? round3
+    : {
+        title: 'Week 3',
+        matchups: [
+          { a: tbd(), b: tbd() },
+          { a: tbd(), b: tbd() },
+        ],
+      },
   {
     title: 'Week 4 — Lower Bracket Final',
     matchups: [{ a: tbd(), b: tbd() }],
