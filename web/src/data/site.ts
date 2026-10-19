@@ -9,11 +9,9 @@ export const externalLinks = {
   youtube: 'https://www.youtube.com/@lfgs7475',
 };
 
-// status/date are the build-time fallback; activeAt/statusOnceActive drive the
-// real client-side comparison against "now" in America/New_York (see the
-// schedule page's script). Keep status roughly in sync with what activeAt
-// implies as of whenever this file is edited, so there's no flash of wrong
-// content before the client script corrects it on load.
+// Rows with activeAt get their pill purely from the dates (see lib/key-dates.ts):
+// each phase runs until the next dated row starts. Rows without one use
+// status/highlight, which here follow the REGISTRATION_OPEN flag.
 export const keyDates: KeyDate[] = [
   {
     label: 'Registration Opens',
@@ -34,30 +32,19 @@ export const keyDates: KeyDate[] = [
     date: 'Sun, Sep 6, 2026 · 11:59 PM EST',
     desc: 'Last chance to lock in a roster',
     status: REGISTRATION_OPEN ? 'Upcoming' : 'Closed',
-    // Was gold while registration closing was the current live state; now
-    // that the regular season has begun, Regular Season Begins below is the
-    // active row instead, so this one goes back to the plain gray Closed look.
     highlight: false,
   },
   {
     label: 'Regular Season Begins',
     date: 'Mon, Sep 14, 2026',
     desc: 'Round robin season — 1 official match per week',
-    status: 'In Progress',
     activeAt: '2026-09-14T00:00:00',
-    // Gold + "In Progress" now that this date has arrived — the client
-    // script re-derives this from activeAt on load, this is just the
-    // build-time fallback kept in sync with that.
-    highlight: true,
-    statusOnceActive: 'In Progress',
   },
   {
     label: 'Playoffs Begin',
     date: 'Mon, Oct 5, 2026',
     desc: 'Diamond: top 4 double-elimination (seeds 2 & 3 play-in first). Emerald: 3-team round robin, then semifinal and grand final',
-    status: 'Upcoming',
     activeAt: '2026-10-05T00:00:00',
-    statusOnceActive: 'Closed',
   },
 ];
 

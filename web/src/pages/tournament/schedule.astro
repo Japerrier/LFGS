@@ -2,13 +2,20 @@
 import Layout from '../../layouts/Layout.astro';
 import TournamentNav from '../../components/TournamentNav.astro';
 import { keyDates } from '../../data/site';
+import { nowInNewYork, phaseEndsAt, phaseStatus } from '../../lib/key-dates';
 
-const statusStyles: Record<string, string> = {
-  Open: 'bg-gold text-bg',
-  Closed: 'bg-white/6 text-muted',
-  Upcoming: 'bg-white/6 text-muted',
-  TBD: 'bg-white/6 text-muted',
-};
+const GOLD = 'bg-gold text-bg';
+const GRAY = 'bg-white/6 text-muted';
+
+// Build-time snapshot of each pill. Dated rows are re-derived in the browser
+// below, since the site is static and only rebuilds on data changes.
+const buildNow = nowInNewYork();
+const rows = keyDates.map((d, i) => {
+  if (!d.activeAt) return { ...d, pillStatus: d.status ?? 'TBD', gold: Boolean(d.highlight) };
+  const endsAt = phaseEndsAt(keyDates, i);
+  const pillStatus = phaseStatus(d.activeAt, endsAt, buildNow);
+  return { ...d, endsAt, pillStatus, gold: pillStatus === 'In Progress' };
+});
 ---
 
 <Layout title="Schedule">
@@ -16,18 +23,18 @@ const statusStyles: Record<string, string> = {
     <TournamentNav activeTab="schedule" />
 
     <div class="mb-5 flex flex-col gap-2.5">
-      {keyDates.map((d) => (
+      {rows.map((d) => (
         <div class="flex flex-wrap items-center gap-5 rounded-[10px] border border-gold/12 bg-bg-raised px-[22px] py-4">
           <div class="w-[200px] shrink-0 font-display text-[17px] font-bold text-gold">{d.label}</div>
           <div class="w-[230px] shrink-0 text-sm text-muted-soft">{d.date}</div>
           <div class="min-w-[180px] flex-1 text-sm text-muted-softer">{d.desc}</div>
           <div
-            class:list={['rounded-full px-3.5 py-1.5 font-display text-xs font-bold', d.highlight ? statusStyles.Open : statusStyles.Closed]}
+            class:list={['rounded-full px-3.5 py-1.5 font-display text-xs font-bold', d.gold ? GOLD : GRAY]}
             data-status-pill
             data-active-at={d.activeAt}
-            data-status-once-active={d.statusOnceActive}
+            data-ends-at={d.endsAt}
           >
-            {d.status}
+            {d.pillStatus}
           </div>
         </div>
       ))}
@@ -35,50 +42,23 @@ const statusStyles: Record<string, string> = {
   </div>
 
   <script>
-    // Re-derives each key date's real status from the visitor's actual
-    // "now," compared in America/New_York regardless of where they are —
-    // this is a static site, so the server-rendered status is only a
-    // build-time snapshot and would otherwise go stale between deploys.
-    const STATUS_CLASSES: Record<string, string[]> = {
-      Open: ['bg-gold', 'text-bg'],
-      Closed: ['bg-white/6', 'text-muted'],
-      Upcoming: ['bg-white/6', 'text-muted'],
-      TBD: ['bg-white/6', 'text-muted'],
-      'In Progress': ['bg-gold', 'text-bg'],
-    };
-    const ALL_STATUS_CLASSES = Object.values(STATUS_CLASSES).flat();
+    import { nowInNewYork, phaseStatus } from '../../lib/key-dates';
 
-    function nowInNewYork(): string {
-      const parts = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'America/New_York',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hourCycle: 'h23',
-      }).formatToParts(new Date());
-      const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '00';
-      return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}:${get('second')}`;
-    }
+    // Re-derives each dated phase against the visitor's actual "now" (in
+    // America/New_York), so pills don't go stale between deploys.
+    const GOLD = ['bg-gold', 'text-bg'];
+    const GRAY = ['bg-white/6', 'text-muted'];
 
-    function updateKeyDateStatuses() {
-      const now = nowInNewYork();
-      document.querySelectorAll<HTMLElement>('[data-status-pill]').forEach((pill) => {
-        const activeAt = pill.dataset.activeAt;
-        const statusOnceActive = pill.dataset.statusOnceActive;
-        // No real date to compare (e.g. Playoffs) — leave the build-time value alone.
-        if (!activeAt || !statusOnceActive) return;
-        // Not reached yet — leave as the build-time "Upcoming" fallback.
-        if (now < activeAt) return;
+    const now = nowInNewYork();
+    document.querySelectorAll<HTMLElement>('[data-status-pill]').forEach((pill) => {
+      const { activeAt, endsAt } = pill.dataset;
+      // Flag-driven rows (registration) have no date to compare.
+      if (!activeAt) return;
 
-        pill.textContent = statusOnceActive;
-        pill.classList.remove(...ALL_STATUS_CLASSES);
-        pill.classList.add(...(STATUS_CLASSES[statusOnceActive] ?? STATUS_CLASSES.Closed));
-      });
-    }
-
-    updateKeyDateStatuses();
+      const status = phaseStatus(activeAt, endsAt, now);
+      pill.textContent = status;
+      pill.classList.remove(...GOLD, ...GRAY);
+      pill.classList.add(...(status === 'In Progress' ? GOLD : GRAY));
+    });
   </script>
 </Layout>

@@ -92,25 +92,25 @@ export interface Matchup {
   team2Forfeit?: boolean;
 }
 
-export type KeyDateStatus = 'Open' | 'Closed' | 'Upcoming' | 'TBD' | 'In Progress';
+export type KeyDateStatus = 'Open' | 'Closed' | 'Upcoming' | 'TBD' | 'In Progress' | 'Complete';
 
 export interface KeyDate {
   label: string;
   date: string;
   desc: string;
-  /** Build-time fallback, and what's shown if JS never runs. Kept in sync
-   *  manually — the client re-derives the real status from activeAt on load. */
-  status: KeyDateStatus;
-  /** America/New_York wall-clock timestamp ('YYYY-MM-DDTHH:mm:ss') this
-   *  entry becomes active at. Omit for entries with no real date (e.g. TBD). */
+  /** America/New_York wall-clock timestamp ('YYYY-MM-DDTHH:mm:ss') this phase
+   *  starts at. When set, the pill is derived entirely from the dates:
+   *  Upcoming before it, In Progress (gold) until the phase ends, then
+   *  Complete. status/highlight below are ignored. */
   activeAt?: string;
-  /** Status to show once "now" (in America/New_York) reaches activeAt. */
-  statusOnceActive?: KeyDateStatus;
-  /** Force the gold "currently active" pill styling regardless of what
-   *  `status` says — for rows where gold means "this is the live state of
-   *  the thing" rather than literally "Open" (e.g. Registration Closes
-   *  should read gold, not the usual gray Closed, while it's the current
-   *  reality). Omit for rows that should just use the normal status color. */
+  /** Same format as activeAt. Only needed when a phase ends before the next
+   *  dated row starts, or for the last phase; otherwise the next dated row's
+   *  activeAt is used. */
+  endsAt?: string;
+  /** For rows without activeAt (driven by a flag rather than a date). */
+  status?: KeyDateStatus;
+  /** For rows without activeAt: force the gold "currently active" pill
+   *  regardless of what `status` says. */
   highlight?: boolean;
 }
 
