@@ -28,7 +28,7 @@ export const REGISTRATION_OPEN = false;
 // keeps the year attached anywhere the value is shown to a user. Bump both
 // together each time a new OW season starts.
 export const CURRENT_OW_SEASON_YEAR = 2026;
-export const CURRENT_OW_SEASON_NUMBER = 4;
+export const CURRENT_OW_SEASON_NUMBER = 5;
 
 export function owSeasonLabel(seasonNumber: number, year = CURRENT_OW_SEASON_YEAR): string {
   return `${year}: Season ${seasonNumber}`;
