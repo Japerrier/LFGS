@@ -30,11 +30,13 @@ const rank = displayRank(
     support: Boolean(player.registeredForSupport),
   }
 );
-// Label each screenshot with its real season number before reversing, so the
-// labels stay correct (season 3, 2, 1) regardless of display order — and so a
-// player missing a later season (e.g. no season 3 yet) doesn't shift labels.
-const screenshots = (player.seasonScreenshotImageKeys ?? [])
-  .map((key, i) => ({ key, season: i + 1 }));
+// Label each screenshot from its S3 filename (e.g. "Darkskull082_Games_Won_1.png"
+// -> "Darkskull082 Games Won 1") rather than its position in the list, since
+// keys aren't always one-per-season (console, games-won, missing seasons).
+const screenshots = (player.seasonScreenshotImageKeys ?? []).map((key) => ({
+  key,
+  label: key.split('/').pop()!.replace(/\.[^.]+$/, '').replace(/_/g, ' '),
+}));
 ---
 
 <Layout title={`${player.name} — ${team.name}`}>
@@ -78,10 +80,10 @@ const screenshots = (player.seasonScreenshotImageKeys ?? [])
       </div>
     ) : (
       <div class="flex flex-col gap-3.5">
-        {screenshots.map(({ key, season }) => (
+        {screenshots.map(({ key, label }) => (
           <img
             src={`/media/${key}`}
-            alt={`${player.name} season ${season} screenshot`}
+            alt={label}
             class="w-full cursor-zoom-in rounded-[10px]"
             data-lightbox-trigger
           />
