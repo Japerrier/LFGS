@@ -196,14 +196,36 @@ const diamondColumns: Column[] = [
 // in the Grand Final. The round robin matches are listed on the Matchups tab
 // like any other week.
 //
-// The semifinal is the first playoff week with no bye row: round robin weeks
-// always have one, so this holds whether or not those weeks are flagged as
-// playoff. The Grand Final is the week after.
+// The round robin weeks aren't flagged as playoff, so the semifinal is the
+// first playoff week and the Grand Final the week after.
 const emeraldRows = bracket === 'Emerald' ? getPlayoffMatchupsByBracket('Emerald') : [];
-const emeraldByeWeeks = new Set(emeraldRows.filter((m) => m.byeWeek).map((m) => m.week));
-const emeraldSemiWeek = emeraldRows.find((m) => !emeraldByeWeeks.has(m.week))?.week;
+const emeraldSemiWeek = emeraldRows.find((m) => !m.byeWeek)?.week;
 const emeraldSemiRows = emeraldRows.filter((m) => m.week === emeraldSemiWeek);
 const emeraldFinalRows = emeraldSemiWeek === undefined ? [] : emeraldRows.filter((m) => m.week === emeraldSemiWeek + 1);
+
+// The round robin is the 3 regular-season weeks right before the semifinal.
+// Once every one of its matches has a result, its standings seed the
+// semifinal and put 1st place into the Grand Final before that row exists.
+const emeraldRegularRows =
+  emeraldSemiWeek === undefined
+    ? []
+    : getRegularSeasonMatchupsByBracket('Emerald').filter((m) => m.week < emeraldSemiWeek);
+const roundRobinWeeks = [...new Set(emeraldRegularRows.map((m) => m.week))].slice(-3);
+const roundRobinRows = emeraldRegularRows.filter((m) => roundRobinWeeks.includes(m.week));
+const roundRobinDone =
+  roundRobinWeeks.length === 3 &&
+  roundRobinRows
+    .filter((m) => !m.byeWeek && m.team2)
+    .every((m) => {
+      const { team1Score, team2Score } = resolveScores(m);
+      return team1Score !== undefined && team2Score !== undefined;
+    });
+const roundRobinStandings = roundRobinDone ? computeStandings(roundRobinRows, { ignoreStatus: true }).main : [];
+const emeraldSeedByTeamId = new Map(roundRobinStandings.map((r) => [r.team.teamId, r.tied ? `T-${r.rank}` : String(r.rank)]));
+// A tie for 1st is settled by staff, so 1st place stays TBD until it is.
+const emeraldFirst = roundRobinStandings.filter((r) => r.rank === 1);
+const emeraldFirstSide: Side =
+  emeraldFirst.length === 1 ? side(emeraldFirst[0].team, undefined, undefined, emeraldSeedByTeamId) : tbd('1st Place — TBD');
 
 const emeraldColumns: Column[] = [
   {
@@ -215,15 +237,15 @@ const emeraldColumns: Column[] = [
     title: 'Week 4 — Semifinal',
     matchups:
       emeraldSemiRows.length > 0
-        ? matchupsFromRows(emeraldSemiRows, noSeeds)
+        ? matchupsFromRows(emeraldSemiRows, emeraldSeedByTeamId)
         : [{ a: tbd('2nd Place — TBD'), b: tbd('3rd Place — TBD') }],
   },
   {
     title: 'Week 5 — Grand Final',
     matchups:
       emeraldFinalRows.length > 0
-        ? matchupsFromRows(emeraldFinalRows, noSeeds).map((m) => ({ ...m, grandFinal: true }))
-        : [{ a: tbd('1st Place — TBD'), b: tbd('Semifinal Winner — TBD'), grandFinal: true }],
+        ? matchupsFromRows(emeraldFinalRows, emeraldSeedByTeamId).map((m) => ({ ...m, grandFinal: true }))
+        : [{ a: emeraldFirstSide, b: tbd('Semifinal Winner — TBD'), grandFinal: true }],
   },
 ];
 
