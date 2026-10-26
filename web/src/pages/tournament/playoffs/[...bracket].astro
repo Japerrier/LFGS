@@ -149,6 +149,13 @@ const rowsForRound = (offset: number) =>
 const round4Rows = rowsForRound(3);
 const round5Rows = rowsForRound(4);
 
+// The upper bracket final's winner goes straight to the Grand Final, so they
+// can be shown there before the week 5 row exists. Their opponent waits on the
+// lower bracket final.
+const upperFinal = round3.matchups.find((m) => upperWins(m) === 2);
+const upperFinalWinner = upperFinal && [upperFinal.a, upperFinal.b].find((s) => s.won && s.team);
+const grandFinalTopSide: Side = upperFinalWinner ? side(upperFinalWinner.team!, undefined, undefined, noSeeds) : tbd();
+
 const diamondColumns: Column[] = [
   playInRows.length > 0
     ? playIn
@@ -186,7 +193,7 @@ const diamondColumns: Column[] = [
     matchups:
       round5Rows.length > 0
         ? matchupsFromRows(round5Rows, noSeeds).map((m) => ({ ...m, grandFinal: true }))
-        : [{ a: tbd(), b: tbd(), grandFinal: true }],
+        : [{ a: grandFinalTopSide, b: tbd(), grandFinal: true }],
   },
 ];
 
