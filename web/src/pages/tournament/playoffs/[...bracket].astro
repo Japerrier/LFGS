@@ -48,27 +48,6 @@ interface Column {
 
 const tbd = (label = 'TBD'): Side => ({ label });
 
-// Emerald: a team dropped, leaving 3 — not enough for double elimination. The 3
-// teams play a round robin for 3 weeks (one team on a bye each week) to set the
-// playoff standings. Then 2nd vs 3rd in a semifinal, and that winner meets 1st
-// in the Grand Final. The round robin matches are listed on the Matchups tab
-// like any other week.
-const emeraldColumns: Column[] = [
-  {
-    title: 'Weeks 1–3 — Round Robin',
-    matchups: [],
-    matchupsLink: '/tournament/matchups/emerald',
-  },
-  {
-    title: 'Week 4 — Semifinal',
-    matchups: [{ a: tbd('2nd Place — TBD'), b: tbd('3rd Place — TBD') }],
-  },
-  {
-    title: 'Week 5 — Grand Final',
-    matchups: [{ a: tbd('1st Place — TBD'), b: tbd('Semifinal Winner — TBD'), grandFinal: true }],
-  },
-];
-
 // Diamond: all 8 teams are ranked together after the regular season. Seeds 1
 // and 2 get byes; seeds 3-6 play in on week 1; the two winners join them in a
 // 4-team double-elimination bracket for weeks 2-5. Seeds 5 and 6 were level on
@@ -208,6 +187,43 @@ const diamondColumns: Column[] = [
       round5Rows.length > 0
         ? matchupsFromRows(round5Rows, noSeeds).map((m) => ({ ...m, grandFinal: true }))
         : [{ a: tbd(), b: tbd(), grandFinal: true }],
+  },
+];
+
+// Emerald: a team dropped, leaving 3 — not enough for double elimination. The 3
+// teams play a round robin for 3 weeks (one team on a bye each week) to set the
+// playoff standings. Then 2nd vs 3rd in a semifinal, and that winner meets 1st
+// in the Grand Final. The round robin matches are listed on the Matchups tab
+// like any other week.
+//
+// The semifinal is the first playoff week with no bye row: round robin weeks
+// always have one, so this holds whether or not those weeks are flagged as
+// playoff. The Grand Final is the week after.
+const emeraldRows = bracket === 'Emerald' ? getPlayoffMatchupsByBracket('Emerald') : [];
+const emeraldByeWeeks = new Set(emeraldRows.filter((m) => m.byeWeek).map((m) => m.week));
+const emeraldSemiWeek = emeraldRows.find((m) => !emeraldByeWeeks.has(m.week))?.week;
+const emeraldSemiRows = emeraldRows.filter((m) => m.week === emeraldSemiWeek);
+const emeraldFinalRows = emeraldSemiWeek === undefined ? [] : emeraldRows.filter((m) => m.week === emeraldSemiWeek + 1);
+
+const emeraldColumns: Column[] = [
+  {
+    title: 'Weeks 1–3 — Round Robin',
+    matchups: [],
+    matchupsLink: '/tournament/matchups/emerald',
+  },
+  {
+    title: 'Week 4 — Semifinal',
+    matchups:
+      emeraldSemiRows.length > 0
+        ? matchupsFromRows(emeraldSemiRows, noSeeds)
+        : [{ a: tbd('2nd Place — TBD'), b: tbd('3rd Place — TBD') }],
+  },
+  {
+    title: 'Week 5 — Grand Final',
+    matchups:
+      emeraldFinalRows.length > 0
+        ? matchupsFromRows(emeraldFinalRows, noSeeds).map((m) => ({ ...m, grandFinal: true }))
+        : [{ a: tbd('1st Place — TBD'), b: tbd('Semifinal Winner — TBD'), grandFinal: true }],
   },
 ];
 
