@@ -123,6 +123,8 @@ export interface LeadershipMember {
 export interface HOFAllStar {
   category: string;
   name: string;
+  /** Set once a season runs more than one bracket; each bracket gets its own set. */
+  bracket?: Bracket;
 }
 
 export interface HOFPodiumPlayer {

@@ -10,6 +10,7 @@ const { season: seasonParam } = Astro.params;
 const season = Number(seasonParam);
 const active = getHofSeason(season)!;
 const hasMultipleBrackets = new Set(active.podium.map((p) => p.bracket)).size > 1;
+const hasBracketAllStars = active.allStars.some((as) => as.bracket);
 
 const badgeStyles: Record<string, string> = {
   '1st': 'bg-linear-to-br from-[#f7d774] to-[#c9962c]',
@@ -42,14 +43,39 @@ const badgeStyles: Record<string, string> = {
     {active.allStars.length > 0 && (
       <>
         <h2 class="mb-4 font-display text-xl font-bold text-ink">All-Stars</h2>
-        <div class="mb-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {active.allStars.map((as) => (
-            <div class="flex flex-col items-center gap-2.5 rounded-xl border border-gold/14 bg-bg-raised p-5 text-center">
-              <div class="font-display text-xl font-bold text-ink">{as.name}</div>
-              <div class="text-[11px] font-semibold uppercase tracking-wide text-gold">{as.category} All-Star</div>
-            </div>
-          ))}
-        </div>
+        {hasBracketAllStars ? (
+          <div class="mb-9 grid grid-cols-1 gap-6 md:grid-cols-2">
+            {(['Emerald', 'Diamond'] as const).map((bracket) => {
+              const entries = active.allStars.filter((as) => as.bracket === bracket);
+              if (entries.length === 0) return null;
+              return (
+                <div>
+                  <div class="mb-3 flex items-center gap-2.5">
+                    <img src={`/images/${bracket}.png`} alt={`${bracket} bracket`} class="h-6 w-6 object-contain" />
+                    <div class="font-display text-sm font-bold uppercase tracking-[2px] text-ink">{bracket}</div>
+                  </div>
+                  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {entries.map((as) => (
+                      <div class="flex flex-col items-center gap-2.5 rounded-xl border border-gold/14 bg-bg-raised p-5 text-center">
+                        <div class="font-display text-xl font-bold text-ink">{as.name}</div>
+                        <div class="text-[11px] font-semibold uppercase tracking-wide text-gold">{as.category} All-Star</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div class="mb-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {active.allStars.map((as) => (
+              <div class="flex flex-col items-center gap-2.5 rounded-xl border border-gold/14 bg-bg-raised p-5 text-center">
+                <div class="font-display text-xl font-bold text-ink">{as.name}</div>
+                <div class="text-[11px] font-semibold uppercase tracking-wide text-gold">{as.category} All-Star</div>
+              </div>
+            ))}
+          </div>
+        )}
       </>
     )}
 

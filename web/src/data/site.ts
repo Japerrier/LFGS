@@ -174,12 +174,8 @@ const historicalPodiums: Record<number, HOFPodiumEntry[]> = {
   3: [{ place: '1st', team: 'Topaz Titans', bracket: 'Diamond' }],
 };
 
-const tbdAllStars: HOFAllStar[] = [
-  { category: 'Overall', name: 'TBD Player' },
-  { category: 'Tank', name: 'TBD Player' },
-  { category: 'DPS', name: 'TBD Player' },
-  { category: 'Support', name: 'TBD Player' },
-];
+const tbdAllStars = (bracket: Bracket): HOFAllStar[] =>
+  ['Overall', 'Tank', 'DPS', 'Support'].map((category) => ({ category, name: 'TBD Player', bracket }));
 
 const historicalAllStars: Record<number, HOFAllStar[]> = {
   7: [
@@ -193,7 +189,9 @@ const historicalAllStars: Record<number, HOFAllStar[]> = {
 export const hofSeasons: HOFSeason[] = [8, 7, 6, 5, 4, 3].map((season) => ({
   season,
   podium: historicalPodiums[season] ?? bracketPodium(season, 'Diamond'),
-  allStars: historicalAllStars[season] ?? (season === 8 ? tbdAllStars : []),
+  allStars:
+    historicalAllStars[season] ??
+    (season === 8 ? (['Emerald', 'Diamond'] as const).flatMap((bracket) => tbdAllStars(bracket)) : []),
 }));
 
 export function getHofSeason(season: number): HOFSeason | undefined {
