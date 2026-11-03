@@ -11,6 +11,13 @@ export const CURRENT_LFGS_SEASON_COMPLETE = false;
 
 export const LATEST_COMPLETE_SEASON = CURRENT_LFGS_SEASON_COMPLETE ? CURRENT_LFGS_SEASON : CURRENT_LFGS_SEASON - 1;
 
+// Season the Hall of Fame opens on for a first-time visitor (after that, the
+// last season they picked is remembered client-side). Normally this tracks
+// LATEST_COMPLETE_SEASON, but once the current season's podium starts filling
+// in (3rd place is known after the semifinals) it's worth showing early.
+// Keep /hall-of-fame's redirect in astro.config.mjs in step with this.
+export const HOF_DEFAULT_SEASON = CURRENT_LFGS_SEASON;
+
 // Manual on/off switch for team sign-ups. Flip to false to close registration
 // for CURRENT_LFGS_SEASON: this hides/disables the CTA buttons on the home
 // and about pages, swaps the /tournament/register form for a closed message,

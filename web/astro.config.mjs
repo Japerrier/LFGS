@@ -11,7 +11,7 @@ export default defineConfig({
   redirects: {
     '/tournament': '/tournament/schedule',
     '/tournament/bracket': '/tournament/bracket/diamond',
-    '/hall-of-fame': '/hall-of-fame/7',
+    '/hall-of-fame': '/hall-of-fame/8',
     '/tournament/rulebook': '/rulebook',
     '/tournament/rulebook/full': '/rulebook',
   },

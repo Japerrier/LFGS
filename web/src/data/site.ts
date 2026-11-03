@@ -84,21 +84,31 @@ function bracketPodium(season: number, bracket: 'Diamond' | 'Emerald'): HOFPodiu
   ];
 }
 
+type Placement = { place: '1st' | '2nd' | '3rd'; teamName: string; bracket: Bracket };
+
 // Which team placed where isn't stored anywhere in DynamoDB — it's a fact
 // about the season's outcome, not a team/roster attribute — so it stays
 // here. Logo and roster for each team come from DynamoDB/S3 live (see
-// buildSeason7Podium below) rather than being duplicated in this file.
-const season7Placements: { place: '1st' | '2nd' | '3rd'; teamName: string; bracket: Bracket }[] = [
+// buildPodium below) rather than being duplicated in this file.
+const season7Placements: Placement[] = [
   { place: '1st', teamName: 'DAWGS', bracket: 'Diamond' },
   { place: '2nd', teamName: 'Prune Juice Predators', bracket: 'Diamond' },
   { place: '3rd', teamName: 'Imperium', bracket: 'Diamond' },
 ];
 
-async function buildSeason7Podium(): Promise<HOFPodiumEntry[]> {
-  const teams = await getTeamsBySeason(7);
+// Season 8 is still in its Grand Finals, so only 3rd place is known so far
+// (Diamond: lower bracket final loser; Emerald: semifinal loser). 1st/2nd stay
+// as TBD placeholders until they're added here.
+const season8Placements: Placement[] = [
+  { place: '3rd', teamName: 'Mc Pengu Cowboys', bracket: 'Diamond' },
+  { place: '3rd', teamName: 'Trick Room', bracket: 'Emerald' },
+];
+
+async function buildPodium(season: number, placements: Placement[]): Promise<HOFPodiumEntry[]> {
+  const teams = await getTeamsBySeason(season);
   const entries: HOFPodiumEntry[] = [];
 
-  for (const placement of season7Placements) {
+  for (const placement of placements) {
     const team = teams.find((t) => t.name === placement.teamName);
     const entry: HOFPodiumEntry = { place: placement.place, team: placement.teamName, bracket: placement.bracket };
     if (!team) {
@@ -130,12 +140,21 @@ async function buildSeason7Podium(): Promise<HOFPodiumEntry[]> {
   return entries;
 }
 
-const season7Podium = await buildSeason7Podium();
+const season7Podium = await buildPodium(7, season7Placements);
+
+// Known Season 8 results slot into the TBD placeholders by bracket and place.
+const season8Results = await buildPodium(8, season8Placements);
+const season8Podium = (['Diamond', 'Emerald'] as const).flatMap((bracket) =>
+  bracketPodium(8, bracket).map(
+    (placeholder) => season8Results.find((r) => r.bracket === bracket && r.place === placeholder.place) ?? placeholder,
+  ),
+);
 
 // Recorded results for past seasons. Season 3's record only survived for the 1st place
-// finisher — 2nd/3rd weren't tracked. Seasons without an entry here (i.e. Season 8, not yet
-// played) fall back to TBD placeholders.
+// finisher — 2nd/3rd weren't tracked. Seasons without an entry here fall back to TBD
+// placeholders.
 const historicalPodiums: Record<number, HOFPodiumEntry[]> = {
+  8: season8Podium,
   7: season7Podium,
   6: [
     { place: '1st', team: 'Fireside Fireflies', bracket: 'Diamond' },
@@ -173,11 +192,7 @@ const historicalAllStars: Record<number, HOFAllStar[]> = {
 
 export const hofSeasons: HOFSeason[] = [8, 7, 6, 5, 4, 3].map((season) => ({
   season,
-  podium:
-    historicalPodiums[season] ??
-    (season === 8
-      ? [...bracketPodium(season, 'Diamond'), ...bracketPodium(season, 'Emerald')]
-      : bracketPodium(season, 'Diamond')),
+  podium: historicalPodiums[season] ?? bracketPodium(season, 'Diamond'),
   allStars: historicalAllStars[season] ?? (season === 8 ? tbdAllStars : []),
 }));
 

@@ -1,6 +1,6 @@
 ---
 import { externalLinks } from '../data/site';
-import { LATEST_COMPLETE_SEASON } from '../lib/season';
+import { HOF_DEFAULT_SEASON } from '../lib/season';
 
 interface Props {
   currentPath: string;
@@ -12,7 +12,7 @@ const navItems = [
   { label: 'Home', href: '/', match: (p: string) => p === '/' },
   { label: 'Tournament', href: '/tournament/schedule', match: (p: string) => p.startsWith('/tournament') || p.startsWith('/teams') },
   { label: 'Rulebook', href: '/rulebook', match: (p: string) => p.startsWith('/rulebook') },
-  { label: 'Hall of Fame', href: `/hall-of-fame/${LATEST_COMPLETE_SEASON}`, match: (p: string) => p.startsWith('/hall-of-fame') },
+  { label: 'Hall of Fame', href: `/hall-of-fame/${HOF_DEFAULT_SEASON}`, match: (p: string) => p.startsWith('/hall-of-fame') },
   { label: 'About', href: '/about', match: (p: string) => p.startsWith('/about') },
 ];
 ---
@@ -29,6 +29,7 @@ const navItems = [
       return (
         <a
           href={item.href}
+          data-hof-link={item.label === 'Hall of Fame' ? '' : undefined}
           class:list={[
             'rounded-md px-[18px] py-2.5 font-display text-[15.5px] font-semibold',
             active ? 'bg-gold/10 text-gold' : 'text-muted-softer hover:text-ink',
@@ -49,3 +50,27 @@ const navItems = [
     Join Discord
   </a>
 </header>
+
+<script>
+  // The Hall of Fame season lives in the URL path and this is a static,
+  // multi-page site, so the last season a visitor picked is kept in
+  // localStorage (set by the Hall of Fame page) and swapped into the nav link.
+  // localStorage has no built-in expiry, so a saved season older than 30 days
+  // is dropped here and the link keeps the default season.
+  const STORAGE_KEY = 'lfgs:hof-season';
+  const TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+  try {
+    // Values saved before the TTL existed are a bare season number with no
+    // savedAt, so they fail the age check and are cleared like expired ones.
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
+    const link = document.querySelector<HTMLAnchorElement>('a[data-hof-link]');
+    if (stored?.season && typeof stored.savedAt === 'number' && Date.now() - stored.savedAt < TTL_MS) {
+      if (link) link.href = `/hall-of-fame/${stored.season}`;
+    } else if (stored !== null) {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  } catch {
+    // Storage unavailable (private mode, blocked): keep the default season.
+  }
+</script>

@@ -163,3 +163,14 @@ const badgeStyles: Record<string, string> = {
     )}
   </div>
 </Layout>
+
+<script define:vars={{ season }}>
+  // Remembered so the header's Hall of Fame link reopens this season. savedAt
+  // lets the header expire it after 30 days; re-saving on every view makes
+  // that a rolling window.
+  try {
+    localStorage.setItem('lfgs:hof-season', JSON.stringify({ season, savedAt: Date.now() }));
+  } catch (e) {
+    // Storage unavailable (private mode, blocked): the link falls back to the default.
+  }
+</script>
