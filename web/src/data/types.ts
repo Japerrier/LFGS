@@ -125,6 +125,8 @@ export interface HOFAllStar {
   name: string;
   /** Set once a season runs more than one bracket; each bracket gets its own set. */
   bracket?: Bracket;
+  /** Player page link; only set when the player has a page (current-season rosters). */
+  href?: string;
 }
 
 export interface HOFPodiumPlayer {
@@ -138,6 +140,8 @@ export interface HOFPodiumEntry {
   team: string;
   bracket: Bracket;
   logoKey?: string;
+  /** Team page link; only set when the team has a page (current-season teams). */
+  href?: string;
   players?: HOFPodiumPlayer[];
 }
 

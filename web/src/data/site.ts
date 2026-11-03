@@ -1,6 +1,7 @@
-import { getTeamsBySeason } from './teams';
+import { getTeamsBySeason, teams as currentTeams } from './teams';
 import { getMembersByTeamId, memberRoles } from './team-members';
-import { REGISTRATION_OPEN } from '../lib/season';
+import { CURRENT_LFGS_SEASON, REGISTRATION_OPEN } from '../lib/season';
+import { slugify } from '../lib/slug';
 import type { Bracket, HOFAllStar, HOFPodiumEntry, HOFSeason, KeyDate, LeadershipMember, TeamMember } from './types';
 
 export const externalLinks = {
@@ -118,6 +119,11 @@ async function buildPodium(season: number, placements: Placement[]): Promise<HOF
 
     if (team.logoKey) entry.logoKey = team.logoKey;
 
+    // Team pages only exist for the current season's teams, so past seasons'
+    // podium teams stay plain text.
+    const teamPage = currentTeams.find((t) => t.teamId === team.teamId);
+    if (teamPage) entry.href = `/teams/${teamPage.slug}`;
+
     const members = await getMembersByTeamId(team.teamId);
     const headCoach = members.find((m) => m.memberType === 'Head Coach');
     const assistantCoach = members.find((m) => m.memberType === 'Assistant Coach');
@@ -186,13 +192,39 @@ const historicalAllStars: Record<number, HOFAllStar[]> = {
   ],
 };
 
-export const hofSeasons: HOFSeason[] = [8, 7, 6, 5, 4, 3].map((season) => ({
-  season,
-  podium: historicalPodiums[season] ?? bracketPodium(season, 'Diamond'),
-  allStars:
-    historicalAllStars[season] ??
-    (season === 8 ? (['Emerald', 'Diamond'] as const).flatMap((bracket) => tbdAllStars(bracket)) : []),
-}));
+// Player pages only exist for current-season rosters, so only that season's
+// All-Stars can link. All-Stars are recorded by name alone, so the link is
+// found by searching the rosters; a name that matches no player, or more than
+// one, stays plain text rather than guessing.
+async function linkAllStars(season: number, allStars: HOFAllStar[]): Promise<HOFAllStar[]> {
+  const named = allStars.filter((as) => !as.name.startsWith('TBD'));
+  if (season !== CURRENT_LFGS_SEASON || named.length === 0) return allStars;
+
+  const rosters = await Promise.all(
+    currentTeams.map(async (team) => ({ team, members: await getMembersByTeamId(team.teamId) })),
+  );
+  return allStars.map((as) => {
+    if (!named.includes(as)) return as;
+    const matches = rosters.flatMap(({ team, members }) =>
+      members
+        .filter((m) => m.memberType === 'Player' && slugify(m.name) === slugify(as.name))
+        .map((m) => `/teams/${team.slug}/players/${slugify(m.name)}`),
+    );
+    return matches.length === 1 ? { ...as, href: matches[0] } : as;
+  });
+}
+
+export const hofSeasons: HOFSeason[] = await Promise.all(
+  [8, 7, 6, 5, 4, 3].map(async (season) => ({
+    season,
+    podium: historicalPodiums[season] ?? bracketPodium(season, 'Diamond'),
+    allStars: await linkAllStars(
+      season,
+      historicalAllStars[season] ??
+        (season === 8 ? (['Emerald', 'Diamond'] as const).flatMap((bracket) => tbdAllStars(bracket)) : []),
+    ),
+  })),
+);
 
 export function getHofSeason(season: number): HOFSeason | undefined {
   return hofSeasons.find((s) => s.season === season);
