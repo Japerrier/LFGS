@@ -7,7 +7,7 @@ export const CURRENT_LFGS_SEASON = 8;
 // are final (same manual-bump-until-DynamoDB story as CURRENT_LFGS_SEASON above).
 // Drives LATEST_COMPLETE_SEASON: while the current season is still in
 // progress, "most recently completed" means the one before it.
-export const CURRENT_LFGS_SEASON_COMPLETE = false;
+export const CURRENT_LFGS_SEASON_COMPLETE = true;
 
 export const LATEST_COMPLETE_SEASON = CURRENT_LFGS_SEASON_COMPLETE ? CURRENT_LFGS_SEASON : CURRENT_LFGS_SEASON - 1;
 
