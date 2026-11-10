@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import TournamentNav from '../../components/TournamentNav.astro';
 import { keyDates } from '../../data/site';
 import { nowInNewYork, phaseEndsAt, phaseStatus } from '../../lib/key-dates';
+import { CURRENT_LFGS_SEASON_COMPLETE } from '../../lib/season';
 
 const GOLD = 'bg-gold text-bg';
 const GRAY = 'bg-white/6 text-muted';
@@ -12,6 +13,10 @@ const GRAY = 'bg-white/6 text-muted';
 const buildNow = nowInNewYork();
 const rows = keyDates.map((d, i) => {
   if (!d.activeAt) return { ...d, pillStatus: d.status ?? 'TBD', gold: Boolean(d.highlight) };
+  // The last phase (playoffs) has no fixed end date, so the dates alone would
+  // leave it In Progress forever. Once the season is marked complete, every
+  // dated phase is over. activeAt is dropped so the browser script skips it.
+  if (CURRENT_LFGS_SEASON_COMPLETE) return { ...d, activeAt: undefined, pillStatus: 'Complete', gold: false };
   const endsAt = phaseEndsAt(keyDates, i);
   const pillStatus = phaseStatus(d.activeAt, endsAt, buildNow);
   return { ...d, endsAt, pillStatus, gold: pillStatus === 'In Progress' };
