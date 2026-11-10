@@ -9,6 +9,10 @@ export const CURRENT_LFGS_SEASON = 8;
 // progress, "most recently completed" means the one before it.
 export const CURRENT_LFGS_SEASON_COMPLETE = true;
 
+// Year LFGS started running. The home page's "Years of Service" stat is the
+// build year minus this, so it ticks over on the first build of each new year.
+export const LFGS_FOUNDED_YEAR = 2021;
+
 export const LATEST_COMPLETE_SEASON = CURRENT_LFGS_SEASON_COMPLETE ? CURRENT_LFGS_SEASON : CURRENT_LFGS_SEASON - 1;
 
 // Season the Hall of Fame opens on for a first-time visitor (after that, the

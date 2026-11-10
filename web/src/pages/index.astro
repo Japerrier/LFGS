@@ -2,7 +2,9 @@
 import Layout from '../layouts/Layout.astro';
 import { teams, teamInitials } from '../data/teams';
 import { externalLinks } from '../data/site';
-import { CURRENT_LFGS_SEASON, CURRENT_LFGS_SEASON_COMPLETE, REGISTRATION_OPEN } from '../lib/season';
+import { CURRENT_LFGS_SEASON, CURRENT_LFGS_SEASON_COMPLETE, LFGS_FOUNDED_YEAR, REGISTRATION_OPEN } from '../lib/season';
+
+const yearsOfService = new Date().getFullYear() - LFGS_FOUNDED_YEAR;
 
 const quickLinks = [
   { label: 'Schedule', desc: 'Stay up to date with tournament deadlines', href: '/tournament/schedule', shape: 'rounded-sm' },
@@ -151,8 +153,8 @@ const quickLinks = [
   <section class="border-y border-gold/12 bg-bg-strip px-8 py-11">
     <div class="content-width mx-auto grid grid-cols-1 gap-6 text-center sm:grid-cols-3">
       {[
-        { value: '8', label: 'Seasons Ran' },
-        { value: '5', label: 'Years of Service' },
+        { value: String(CURRENT_LFGS_SEASON), label: 'Seasons Ran' },
+        { value: String(yearsOfService), label: 'Years of Service' },
         { value: '3100+', label: 'Members' },
       ].map((s) => (
         <div>
