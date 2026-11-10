@@ -97,10 +97,9 @@ const season7Placements: Placement[] = [
   { place: '3rd', teamName: 'Imperium', bracket: 'Diamond' },
 ];
 
-// Emerald's Grand Final is done, so its podium is complete. Diamond only has
-// 3rd place so far (lower bracket final loser); its 1st/2nd stay as TBD
-// placeholders until they're added here.
 const season8Placements: Placement[] = [
+  { place: '1st', teamName: 'Rat Tunnelers', bracket: 'Diamond' },
+  { place: '2nd', teamName: 'Solar Storm', bracket: 'Diamond' },
   { place: '3rd', teamName: 'Mc Pengu Cowboys', bracket: 'Diamond' },
   { place: '1st', teamName: 'The Chum Dumpsters', bracket: 'Emerald' },
   { place: '2nd', teamName: 'Izanami', bracket: 'Emerald' },
