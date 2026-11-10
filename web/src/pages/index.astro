@@ -4,7 +4,10 @@ import { teams, teamInitials } from '../data/teams';
 import { externalLinks } from '../data/site';
 import { CURRENT_LFGS_SEASON, CURRENT_LFGS_SEASON_COMPLETE, LFGS_FOUNDED_YEAR, REGISTRATION_OPEN } from '../lib/season';
 
+import { getDiscordMemberCount, formatMemberCount } from '../lib/discord';
+
 const yearsOfService = new Date().getFullYear() - LFGS_FOUNDED_YEAR;
+const memberCount = formatMemberCount(await getDiscordMemberCount());
 
 const quickLinks = [
   { label: 'Schedule', desc: 'Stay up to date with tournament deadlines', href: '/tournament/schedule', shape: 'rounded-sm' },
@@ -155,7 +158,7 @@ const quickLinks = [
       {[
         { value: String(CURRENT_LFGS_SEASON), label: 'Seasons Ran' },
         { value: String(yearsOfService), label: 'Years of Service' },
-        { value: '3100+', label: 'Members' },
+        { value: memberCount, label: 'Members' },
       ].map((s) => (
         <div>
           <div class="font-display text-[42px] font-bold text-gold">{s.value}</div>
