@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { hofSeasons, getHofSeason } from '../../data/site';
+import { LATEST_COMPLETE_SEASON } from '../../lib/season';
 
 export function getStaticPaths() {
   return hofSeasons.map((s) => ({ params: { season: String(s.season) } }));
@@ -10,7 +11,12 @@ const { season: seasonParam } = Astro.params;
 const season = Number(seasonParam);
 const active = getHofSeason(season)!;
 const hasMultipleBrackets = new Set(active.podium.map((p) => p.bracket)).size > 1;
-const hasBracketAllStars = active.allStars.some((as) => as.bracket);
+// "TBD Player" placeholders hold the All-Star slots while a season is still
+// running. Once it's complete they'd never be filled in, so drop them: a
+// bracket with no named All-Stars disappears, and so does the whole section
+// if no one was named.
+const allStars = season <= LATEST_COMPLETE_SEASON ?active.allStars.filter((as) => !as.name.startsWith('TBD')) : active.allStars;
+const hasBracketAllStars = allStars.some((as) => as.bracket);
 
 const badgeStyles: Record<string, string> = {
   '1st': 'bg-linear-to-br from-[#f7d774] to-[#c9962c]',
@@ -40,13 +46,13 @@ const badgeStyles: Record<string, string> = {
       ))}
     </div>
 
-    {active.allStars.length > 0 && (
+    {allStars.length > 0 && (
       <>
         <h2 class="mb-4 font-display text-xl font-bold text-ink">All-Stars</h2>
         {hasBracketAllStars ? (
           <div class="mb-9 grid grid-cols-1 gap-6 md:grid-cols-2">
             {(['Emerald', 'Diamond'] as const).map((bracket) => {
-              const entries = active.allStars.filter((as) => as.bracket === bracket);
+              const entries = allStars.filter((as) => as.bracket === bracket);
               if (entries.length === 0) return null;
               return (
                 <div>
@@ -72,7 +78,7 @@ const badgeStyles: Record<string, string> = {
           </div>
         ) : (
           <div class="mb-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {active.allStars.map((as) => (
+            {allStars.map((as) => (
               <div class="flex flex-col items-center gap-2.5 rounded-xl border border-gold/14 bg-bg-raised p-5 text-center">
                 {as.href ? (
                   <a href={as.href} class="font-display text-xl font-bold text-ink hover:text-gold">{as.name}</a>
